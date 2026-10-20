@@ -155,9 +155,7 @@ accountSession = {
 
     localStorage.setItem('nbaAccountSession', JSON.stringify(accountSession));
     setStatus('accountLoginStatus', 'Login successful.');
-$('accountScreen').classList.remove('hidden');
-$('lobby').classList.add('hidden');
-$('app').classList.add('hidden');
+showAccountScreen();
   } catch (error) {
     setStatus('accountLoginStatus', errText(error));
   }
