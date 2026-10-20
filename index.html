@@ -192,5 +192,7 @@ $('accountSignupForm').addEventListener('submit', async event => {
 });
 
 // Start on the account screen unless an account is already saved.
-showAccountScreen();  
+$('accountScreen').classList.remove('hidden');
+$('lobby').classList.add('hidden');
+$('app').classList.add('hidden');  
 </script></body></html>
