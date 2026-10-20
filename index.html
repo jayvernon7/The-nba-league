@@ -121,11 +121,13 @@ async function accountRequest(payload) {
 
 function showAccountScreen() {
   $('accountScreen').classList.toggle('hidden', !!accountSession);
-  $('lobby').classList.toggle('hidden', !!accountSession || !!session);
-  $('app').classList.toggle('hidden', !session);
-  
+
   if (session) {
-    showApp();
+    $('lobby').classList.add('hidden');
+    $('app').classList.remove('hidden');
+  } else {
+    $('app').classList.add('hidden');
+    $('lobby').classList.remove('hidden');
   }
 }
 
@@ -153,7 +155,7 @@ accountSession = {
 
     localStorage.setItem('nbaAccountSession', JSON.stringify(accountSession));
     setStatus('accountLoginStatus', 'Login successful.');
-    $('accountScreen').classList.remove('hidden');
+$('accountScreen').classList.remove('hidden');
 $('lobby').classList.add('hidden');
 $('app').classList.add('hidden');
   } catch (error) {
