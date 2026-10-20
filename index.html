@@ -120,14 +120,18 @@ async function accountRequest(payload) {
 }
 
 function showAccountScreen() {
-  $('accountScreen').classList.toggle('hidden', !!accountSession);
+  // No account logged in: show login and signup.
+  $('accountScreen').classList.toggle('hidden', !accountSession);
 
+  // No league membership: show create/join league options.
+  $('lobby').classList.toggle('hidden', !accountSession || !!session);
+
+  // Existing league membership: show the league dashboard.
+  $('app').classList.toggle('hidden', !session);
+
+  // Refresh the existing league when a membership is available.
   if (session) {
-    $('lobby').classList.add('hidden');
-    $('app').classList.remove('hidden');
-  } else {
-    $('app').classList.add('hidden');
-    $('lobby').classList.remove('hidden');
+    refresh();
   }
 }
 
