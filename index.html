@@ -9,7 +9,51 @@
 </head>
 <body><main class="wrap">
 <header class="hero"><div class="brand"><div class="ball">🏀</div><div><div class="eyebrow">YOUR FRONT OFFICE STARTS HERE</div><h1>The NBA League</h1><p class="sub">One league. 30 NBA teams. Your general manager era.</p></div></div><div class="topstatus"><span class="pill" id="connection">Connecting…</span><button class="secondary" id="refreshBtn">Refresh</button></div></header>
-<section id="lobby" class="grid">
+<section id="accountScreen" class="grid">
+  <div class="panel">
+    <h2>Welcome to The NBA League</h2>
+    <p class="muted">Create your account or log in to manage your GM identity.</p>
+
+    <form id="accountLoginForm">
+      <div class="field">
+        <label for="accountLoginUsername">USERNAME</label>
+        <input id="accountLoginUsername" maxlength="24" autocomplete="username" placeholder="Your username" required>
+      </div>
+      <div class="field">
+        <label for="accountLoginPassword">PASSWORD</label>
+        <input id="accountLoginPassword" type="password" autocomplete="current-password" placeholder="Your password" required>
+      </div>
+      <button type="submit">Log In</button>
+    </form>
+
+    <div id="accountLoginStatus" class="status"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Create an account</h2>
+    <p class="muted">Choose a unique username and password to get started.</p>
+
+    <form id="accountSignupForm">
+      <div class="field">
+        <label for="accountSignupUsername">USERNAME</label>
+        <input id="accountSignupUsername" minlength="3" maxlength="24" pattern="[A-Za-z0-9_]+" autocomplete="username" placeholder="3–24 letters, numbers, or underscores" required>
+      </div>
+      <div class="field">
+        <label for="accountSignupPassword">PASSWORD</label>
+        <input id="accountSignupPassword" type="password" minlength="10" autocomplete="new-password" placeholder="At least 10 characters" required>
+      </div>
+      <div class="field">
+        <label for="accountSignupEmail">RECOVERY EMAIL (OPTIONAL)</label>
+        <input id="accountSignupEmail" type="email" autocomplete="email" placeholder="you@example.com">
+      </div>
+      <button type="submit">Create Account</button>
+    </form>
+
+    <div id="accountSignupStatus" class="status"></div>
+  </div>
+</section>
+
+<section id="lobby" class="grid hidden">
 <div class="panel"><h2>Create a league</h2><p class="muted">Start a shared snake draft and invite your GMs with a code.</p><form id="createForm"><div class="field"><label for="leagueName">LEAGUE NAME</label><input id="leagueName" maxlength="60" value="The NBA League" required></div><div class="field"><label for="createName">YOUR GM NAME</label><input id="createName" maxlength="32" placeholder="Commissioner name" required></div><div class="field"><label for="memberLimit">NUMBER OF MEMBERS (2–30)</label><input id="memberLimit" type="number" min="2" max="30" value="6" required></div><button type="submit">Create League</button></form><div id="createStatus" class="status"></div></div>
 <div class="panel"><h2>Join a league</h2><p class="muted">Have an invite code? Join your league from any device.</p><form id="joinForm"><div class="field"><label for="inviteCodeInput">INVITATION CODE</label><input id="inviteCodeInput" maxlength="16" placeholder="e.g. 1A2B3C4D" required></div><div class="field"><label for="joinName">YOUR GM NAME</label><input id="joinName" maxlength="32" placeholder="Choose a unique name" required></div><button type="submit">Join League</button></form><div id="joinStatus" class="status"></div></div>
 </section>
@@ -46,4 +90,105 @@ function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 $('createForm').addEventListener('submit',createLeague);$('joinForm').addEventListener('submit',joinLeague);$('refreshBtn').addEventListener('click',refresh);$('copyInviteBtn').addEventListener('click',copyCode);$('copyInviteBtn2').addEventListener('click',copyCode);$('startBtn').addEventListener('click',()=>act('nba_start_draft',{},'Draft started.'));$('randomizeBtn').addEventListener('click',()=>act('nba_randomize_draft_order',{},'Draft order randomized.'));$('undoBtn').addEventListener('click',()=>{if(confirm('Undo the most recent pick?'))act('nba_undo_last_pick',{},'Last pick undone.');});$('resetBtn').addEventListener('click',()=>{if(confirm('Reset the entire draft? All 30 team picks will be cleared.'))act('nba_reset_league',{},'Draft reset.');});$('leaveBtn').addEventListener('click',()=>{if(confirm('Remove this league from this device? This does not delete the shared league.')){localStorage.removeItem('nbaLeagueSession');session=null;state=null;inviteCode='';showApp();$('connection').textContent='Ready';}});
 $('saveRecordsBtn').addEventListener('click',async()=>{if(!state?.you.is_admin)return;const inputs=[...document.querySelectorAll('[data-win]')];for(const input of inputs){const name=input.dataset.win,w=Number(input.value),l=Number(document.querySelector(`[data-loss="${CSS.escape(name)}"]`).value);if(!Number.isInteger(w)||!Number.isInteger(l)||w<0||l<0||w>82||l>82){setStatus('leagueStatus','Wins and losses must be whole numbers from 0 to 82.');return;}}setStatus('leagueStatus','Saving records…');try{for(const input of inputs){const name=input.dataset.win,w=Number(input.value),l=Number(document.querySelector(`[data-loss="${CSS.escape(name)}"]`).value);await rpc('nba_set_team_record',{p_league_id:session.leagueId,p_member_token:session.token,p_team_name:name,p_wins:w,p_losses:l});}await refresh();setStatus('leagueStatus','All team records saved.');}catch(e){setStatus('leagueStatus',errText(e));}});$('clearRecordsBtn').addEventListener('click',()=>{if(confirm('Clear all team records?'))act('nba_clear_records',{},'Team records cleared.');});
 showApp();if(session){refresh();}else{$('connection').textContent='Ready to create or join';}setInterval(()=>{if(session)refresh();},3000);
+// NBA LEAGUE ACCOUNT SYSTEM
+const ACCOUNT_URL = `${SUPABASE_URL}/functions/v1/nba-account-manager`;
+let accountSession = JSON.parse(localStorage.getItem('nbaAccountSession') || 'null');
+
+async function accountRequest(payload) {
+  const headers = {
+    'Content-Type': 'application/json',
+    'apikey': SUPABASE_KEY
+  };
+
+  if (payload.action === 'change_password' && accountSession?.access_token) {
+    headers.Authorization = `Bearer ${accountSession.access_token}`;
+  }
+
+  const response = await fetch(ACCOUNT_URL, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(payload)
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || data.error || data.ok === false) {
+    throw new Error(data.message || data.error || 'Account request failed.');
+  }
+
+  return data;
+}
+
+function showAccountScreen() {
+  $('accountScreen').classList.toggle('hidden', !!accountSession);
+  $('lobby').classList.toggle('hidden', !!accountSession || !!session);
+  $('app').classList.toggle('hidden', !session);
+  
+  if (session) {
+    showApp();
+  }
+}
+
+$('accountLoginForm').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const username = $('accountLoginUsername').value.trim();
+  const password = $('accountLoginPassword').value;
+  setStatus('accountLoginStatus', 'Logging in…');
+
+  try {
+    const data = await accountRequest({
+      action: 'login',
+      username,
+      password
+    });
+
+accountSession = {
+  access_token: data.access_token,
+  refresh_token: data.refresh_token,
+  user_id: data.user.id,
+  username: data.user.username,
+  must_change_password: data.user.mustChangePassword
+};
+
+    localStorage.setItem('nbaAccountSession', JSON.stringify(accountSession));
+    setStatus('accountLoginStatus', 'Login successful.');
+    showAccountScreen();
+  } catch (error) {
+    setStatus('accountLoginStatus', errText(error));
+  }
+});
+
+$('accountSignupForm').addEventListener('submit', async event => {
+  event.preventDefault();
+
+  const username = $('accountSignupUsername').value.trim().toLowerCase();
+  const password = $('accountSignupPassword').value;
+  const recoveryEmail = $('accountSignupEmail').value.trim();
+
+  setStatus('accountSignupStatus', 'Creating your account…');
+
+  try {
+    const data = await accountRequest({
+      action: 'signup',
+      username,
+      password,
+      recoveryEmail
+    });
+
+    setStatus(
+      'accountSignupStatus',
+      data.message || 'Account created. Please log in.'
+    );
+
+    $('accountLoginUsername').value = username;
+    $('accountLoginPassword').value = '';
+    $('accountLoginUsername').focus();
+  } catch (error) {
+    setStatus('accountSignupStatus', errText(error));
+  }
+});
+
+// Start on the account screen unless an account is already saved.
+showAccountScreen();  
 </script></body></html>
