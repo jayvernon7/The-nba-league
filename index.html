@@ -110,7 +110,10 @@ async function accountRequest(payload) {
     'apikey': SUPABASE_KEY
   };
 
-  if (payload.action === 'change_password' && accountSession?.access_token) {
+ if (
+  ['change_password', 'my_leagues'].includes(payload.action) &&
+  accountSession?.access_token
+) {
     headers.Authorization = `Bearer ${accountSession.access_token}`;
   }
 
