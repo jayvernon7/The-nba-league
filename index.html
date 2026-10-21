@@ -264,12 +264,8 @@ $('accountSignupForm').addEventListener('submit', async event => {
     setStatus('accountSignupStatus', errText(error));
   }
 });
-
-
-showAccountScreen();
-setStatus('accountLoginStatus', 'You have been logged out.');
-});
-  $('logoutBtn').addEventListener('click', () => {
+  
+$('logoutBtn').addEventListener('click', () => {
   accountSession = null;
   localStorage.removeItem('nbaAccountSession');
 
@@ -282,7 +278,6 @@ setStatus('accountLoginStatus', 'You have been logged out.');
   showAccountScreen();
   setStatus('accountLoginStatus', 'You have been logged out.');
 });
-  
 
 // Start on the account screen unless an account is already saved.
 </script></body></html>
