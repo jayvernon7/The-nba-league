@@ -195,6 +195,22 @@ $('accountSignupForm').addEventListener('submit', async event => {
     setStatus('accountSignupStatus', errText(error));
   }
 });
+$('logoutBtn').addEventListener('click', () => {
+// Clear the account login without deleting any leagues or draft data.
+accountSession = null;
+localStorage.removeItem('nbaAccountSession');
+
+// Clear the current device's league session too.
+session = null;
+localStorage.removeItem('nbaLeagueSession');
+
+state = null;
+inviteCode = '';
+
+showAccountScreen();
+setStatus('accountLoginStatus', 'You have been logged out.');
+});
+  
 
 // Start on the account screen unless an account is already saved.
 </script></body></html>
