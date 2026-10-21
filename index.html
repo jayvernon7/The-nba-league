@@ -120,16 +120,16 @@ async function accountRequest(payload) {
 }
 
 function showAccountScreen() {
-  // No account logged in: show login and signup.
-  $('accountScreen').classList.toggle('hidden', !accountSession);
+  // Show login/signup only when no account is logged in.
+  $('accountScreen').classList.toggle('hidden', !!accountSession);
 
-  // No league membership: show create/join league options.
+  // Show create/join options when logged in without a league membership.
   $('lobby').classList.toggle('hidden', !accountSession || !!session);
 
-  // Existing league membership: show the league dashboard.
+  // Show the dashboard when a league membership exists.
   $('app').classList.toggle('hidden', !session);
 
-  // Refresh the existing league when a membership is available.
+  // Refresh the league if a membership exists.
   if (session) {
     refresh();
   }
