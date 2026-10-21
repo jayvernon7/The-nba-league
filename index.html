@@ -53,6 +53,15 @@
   </div>
 </section>
 
+<section id="myLeaguesSection" class="panel hidden">
+  <h2>My Leagues</h2>
+  <p class="muted">All leagues connected to your account will appear here.</p>
+  <div id="myLeaguesList">
+    <p class="muted">Log in to see your leagues.</p>
+  </div>
+</section>
+
+
 <section id="lobby" class="grid hidden">
 <div class="panel"><h2>Create a league</h2><p class="muted">Start a shared snake draft and invite your GMs with a code.</p><form id="createForm"><div class="field"><label for="leagueName">LEAGUE NAME</label><input id="leagueName" maxlength="60" value="The NBA League" required></div><div class="field"><label for="createName">YOUR GM NAME</label><input id="createName" maxlength="32" placeholder="Commissioner name" required></div><div class="field"><label for="memberLimit">NUMBER OF MEMBERS (2–30)</label><input id="memberLimit" type="number" min="2" max="30" value="6" required></div><button type="submit">Create League</button></form><div id="createStatus" class="status"></div></div>
 <div class="panel"><h2>Join a league</h2><p class="muted">Have an invite code? Join your league from any device.</p><form id="joinForm"><div class="field"><label for="inviteCodeInput">INVITATION CODE</label><input id="inviteCodeInput" maxlength="16" placeholder="e.g. 1A2B3C4D" required></div><div class="field"><label for="joinName">YOUR GM NAME</label><input id="joinName" maxlength="32" placeholder="Choose a unique name" required></div><button type="submit">Join League</button></form><div id="joinStatus" class="status"></div></div>
@@ -120,21 +129,81 @@ async function accountRequest(payload) {
   return data;
 }
 
+
 function showAccountScreen() {
   // Show login/signup only when no account is logged in.
   $('accountScreen').classList.toggle('hidden', !!accountSession);
 
-  // Show create/join options when logged in without a league membership.
-  $('lobby').classList.toggle('hidden', !accountSession || !!session);
+  // Show My Leagues only when logged in and not inside a league.
+  $('myLeaguesSection').classList.toggle(
+    'hidden',
+    !accountSession || !!session
+  );
+
+  // Show create/join options when logged in without an active league.
+  $('lobby').classList.toggle(
+    'hidden',
+    !accountSession || !!session
+  );
 
   // Show the dashboard when a league membership exists.
   $('app').classList.toggle('hidden', !session);
 
-  // Refresh the league if a membership exists.
+  // Load saved leagues for the logged-in account.
+  if (accountSession && !session) {
+    loadMyLeagues();
+  }
+
+  // Refresh the active league if a membership exists.
   if (session) {
     refresh();
   }
 }
+
+
+async function loadMyLeagues() {
+  const container = $('myLeaguesList');
+  if (!container || !accountSession?.access_token) return;
+
+  container.innerHTML = '<p class="muted">Loading your leagues...</p>';
+
+  try {
+    const data = await accountRequest({ action: 'my_leagues' });
+
+    if (!data.leagues || data.leagues.length === 0) {
+      container.innerHTML = '<p class="muted">You have not joined any leagues with this account yet.</p>';
+      return;
+    }
+
+    container.innerHTML = '';
+
+    data.leagues.forEach(league => {
+      const card = document.createElement('div');
+      card.className = 'panel';
+      card.innerHTML = `
+        <h3>${escapeHtml(league.league_name)}</h3>
+        <p class="muted">Your GM name: ${escapeHtml(league.display_name)}</p>
+        <p class="muted">${league.is_admin ? 'Commissioner' : 'Member'}</p>
+        <p class="muted">Draft: ${league.draft_started ? 'Started' : 'Not started'}</p>
+        <button type="button" class="secondary" disabled>Open League — coming next</button>
+      `;
+      container.appendChild(card);
+    });
+  } catch (error) {
+    container.textContent = errText(error);
+  }
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
+}
+
 
 $('accountLoginForm').addEventListener('submit', async event => {
   event.preventDefault();
