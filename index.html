@@ -111,8 +111,8 @@ async function accountRequest(payload) {
   };
 
  if (
-  ['change_password', 'my_leagues'].includes(payload.action) &&
-  accountSession?.access_token
+  accountSession?.access_token &&
+  ['change_password', 'my_leagues'].includes(payload.action)
 ) {
     headers.Authorization = `Bearer ${accountSession.access_token}`;
   }
