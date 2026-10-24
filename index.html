@@ -82,7 +82,36 @@ const SUPABASE_KEY='sb_publishable_DeYrI1Q0e8SZL9EOnqaqOw_fkFMwdtw';
 const TEAMS=[['Atlanta Hawks','ATL'],['Boston Celtics','BOS'],['Brooklyn Nets','BKN'],['Charlotte Hornets','CHA'],['Chicago Bulls','CHI'],['Cleveland Cavaliers','CLE'],['Dallas Mavericks','DAL'],['Denver Nuggets','DEN'],['Detroit Pistons','DET'],['Golden State Warriors','GSW'],['Houston Rockets','HOU'],['Indiana Pacers','IND'],['LA Clippers','LAC'],['Los Angeles Lakers','LAL'],['Memphis Grizzlies','MEM'],['Miami Heat','MIA'],['Milwaukee Bucks','MIL'],['Minnesota Timberwolves','MIN'],['New Orleans Pelicans','NOP'],['New York Knicks','NYK'],['Oklahoma City Thunder','OKC'],['Orlando Magic','ORL'],['Philadelphia 76ers','PHI'],['Phoenix Suns','PHX'],['Portland Trail Blazers','POR'],['Sacramento Kings','SAC'],['San Antonio Spurs','SAS'],['Toronto Raptors','TOR'],['Utah Jazz','UTA'],['Washington Wizards','WAS']];
 const $=id=>document.getElementById(id);let session=JSON.parse(localStorage.getItem('nbaLeagueSession')||'null'),state=null,inviteCode=session?.inviteCode||'',polling=false;
 function saveSession(){localStorage.setItem('nbaLeagueSession',JSON.stringify(session));}
-async function rpc(name,args){const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`},body:JSON.stringify(args)});let data;try{data=await r.json()}catch{data={message:'Unexpected server response'}}if(!r.ok)throw new Error(data.message||data.details||data.hint||'Request failed');return data;}
+```javascript
+async function rpc(name,args){
+  const accountSession = JSON.parse(localStorage.getItem('nbaAccountSession') || 'null');
+  const accessToken = accountSession?.access_token;
+
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${accessToken || SUPABASE_KEY}`
+    },
+    body: JSON.stringify(args)
+  });
+
+  let data;
+  try {
+    data = await r.json();
+  } catch {
+    data = { message: 'Unexpected server response' };
+  }
+
+  if (!r.ok) {
+    throw new Error(data.message || data.details || data.hint || 'Request failed');
+  }
+
+  return data;
+}
+```
+
 function setStatus(id,msg){$(id).textContent=msg||''}function errText(e){return e?.message||'Something went wrong.'}
 function showApp(){ $('lobby').classList.toggle('hidden',!!session);$('app').classList.toggle('hidden',!session);if(session){$('inviteArea').classList.toggle('hidden',!inviteCode);$('inviteCodeDisplay').textContent=inviteCode;}}
 function copyCode(){if(!inviteCode){setStatus('leagueStatus','Only the commissioner has the invite code on this device. Ask them to share it.');return;}if(navigator.clipboard?.writeText)navigator.clipboard.writeText(inviteCode).then(()=>setStatus('leagueStatus','Invite code copied.')).catch(()=>prompt('Copy this invite code:',inviteCode));else prompt('Copy this invite code:',inviteCode)}
