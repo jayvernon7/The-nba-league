@@ -115,7 +115,64 @@ function showApp(){ $('lobby').classList.toggle('hidden',!!session);$('app').cla
 function copyCode(){if(!inviteCode){setStatus('leagueStatus','Only the commissioner has the invite code on this device. Ask them to share it.');return;}if(navigator.clipboard?.writeText)navigator.clipboard.writeText(inviteCode).then(()=>setStatus('leagueStatus','Invite code copied.')).catch(()=>prompt('Copy this invite code:',inviteCode));else prompt('Copy this invite code:',inviteCode)}
 async function createLeague(e){e.preventDefault();setStatus('createStatus','Creating your league…');try{const d=await rpc('nba_create_league',{p_league_name:$('leagueName').value.trim()||'The NBA League',p_display_name:$('createName').value.trim(),p_member_limit:Number($('memberLimit').value)});session={leagueId:d.league_id,token:d.member_token,name:d.display_name,isAdmin:true};inviteCode=d.invite_code;session.inviteCode=inviteCode;saveSession();showApp();await refresh();setStatus('leagueStatus','League created. Share the invite code with your GMs.');}catch(e){setStatus('createStatus',errText(e));}}
 async function joinLeague(e){e.preventDefault();setStatus('joinStatus','Joining league…');try{const d=await rpc('nba_join_league',{p_invite_code:$('inviteCodeInput').value.trim().toUpperCase(),p_display_name:$('joinName').value.trim()});session={leagueId:d.league_id,token:d.member_token,name:d.display_name,isAdmin:false};inviteCode='';saveSession();showApp();await refresh();setStatus('leagueStatus','You joined the league.');}catch(e){setStatus('joinStatus',errText(e));}}
-async function refresh(){if(!session||polling)return;polling=true;try{state=await rpc('nba_get_league_state',{p_league_id:session.leagueId,p_member_token:session.token});$('connection').textContent='● Live league connected';$('connection').style.color='var(--green)';showApp();render();}catch(e){$('connection').textContent='Connection issue';$('connection').style.color='var(--red)';setStatus('leagueStatus',errText(e));}finally{polling=false;}}
+async function refresh() {
+  if (!session || polling) return;
+
+  polling = true;
+
+  try {
+    if (session.accountBased) {
+      if (!accountSession?.access_token) {
+        throw new Error('Please log in again to access this league.');
+      }
+
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/rpc/nba_open_account_league`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${accountSession.access_token}`
+          },
+          body: JSON.stringify({
+            p_league_id: session.leagueId
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          result.message ||
+          result.details ||
+          result.hint ||
+          'Could not refresh this league.'
+        );
+      }
+
+      state = result;
+    } else {
+      state = await rpc('nba_get_league_state', {
+        p_league_id: session.leagueId,
+        p_member_token: session.token
+      });
+    }
+
+    $('connection').textContent = '● Live league connected';
+    $('connection').style.color = 'var(--green)';
+
+    showApp();
+    render();
+  } catch (error) {
+    $('connection').textContent = 'Connection issue';
+    $('connection').style.color = 'var(--red)';
+    setStatus('leagueStatus', errText(error));
+  } finally {
+    polling = false;
+  }
+}
 async function act(fn,args={},success='Updated.'){if(!session)return;setStatus('leagueStatus','Working…');try{await rpc(fn,{p_league_id:session.leagueId,p_member_token:session.token,...args});await refresh();setStatus('leagueStatus',success);}catch(e){setStatus('leagueStatus',errText(e));}}
 function currentTurn(){if(!state||!state.started||state.picks.length>=30)return null;const m=state.members.length,n=state.picks.length,r=Math.floor(n/m)+1,slot=n%m;const idx=r%2===1?slot:m-slot-1;return state.members[idx]||null;}
 function render(){if(!state)return; $('leagueTitle').textContent=state.league_name;$('youLabel').textContent=`Signed in as ${state.you.display_name}${state.you.is_admin?' · Commissioner':''}`;$('inviteArea').classList.toggle('hidden',!inviteCode);$('inviteCodeDisplay').textContent=inviteCode;$('memberCount').textContent=`${state.members.length}/${state.member_limit}`;$('pickCount').textContent=`${state.picks.length}/30`;const round=state.picks.length>=30?'Complete':`Round ${Math.floor(state.picks.length/Math.max(1,state.members.length))+1}`;$('roundCount').textContent=round;const turn=currentTurn();$('turnCount').textContent=turn?turn.display_name:'—';$('members').innerHTML=state.members.map((m,i)=>`<span class="member ${m.id===state.you.member_id?'current':''}">${i+1}. ${esc(m.display_name)}${m.is_admin?' ★':''}${m.id===state.you.member_id?' (you)':''}</span>`).join('');$('commissionerTools').classList.toggle('hidden',!state.you.is_admin);$('startBtn').disabled=state.started||state.members.length<2;$('randomizeBtn').disabled=state.started||state.members.length<2;$('undoBtn').disabled=!state.picks.length;$('resetBtn').disabled=!state.picks.length&&!state.started;
@@ -190,7 +247,6 @@ function showAccountScreen() {
   }
 }
 
-
 async function loadMyLeagues() {
   const container = $('myLeaguesList');
   if (!container || !accountSession?.access_token) return;
@@ -210,19 +266,92 @@ async function loadMyLeagues() {
     data.leagues.forEach(league => {
       const card = document.createElement('div');
       card.className = 'panel';
-      card.innerHTML = `
-        <h3>${escapeHtml(league.league_name)}</h3>
-        <p class="muted">Your GM name: ${escapeHtml(league.display_name)}</p>
-        <p class="muted">${league.is_admin ? 'Commissioner' : 'Member'}</p>
-        <p class="muted">Draft: ${league.draft_started ? 'Started' : 'Not started'}</p>
-        <button type="button" class="secondary" disabled>Open League — coming next</button>
-      `;
+
+      const title = document.createElement('h3');
+      title.textContent = league.league_name;
+
+      const gm = document.createElement('p');
+      gm.className = 'muted';
+      gm.textContent = `Your GM name: ${league.display_name}`;
+
+      const role = document.createElement('p');
+      role.className = 'muted';
+      role.textContent = league.is_admin ? 'Commissioner' : 'Member';
+
+      const draft = document.createElement('p');
+      draft.className = 'muted';
+      draft.textContent = `Draft: ${league.draft_started ? 'Started' : 'Not started'}`;
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'secondary';
+      button.textContent = 'Open League';
+
+      button.addEventListener('click', async () => {
+        if (!accountSession?.access_token) {
+          setStatus('leagueStatus', 'Please log in again.');
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = 'Opening...';
+
+        try {
+          const response = await fetch(
+            `${SUPABASE_URL}/rest/v1/rpc/nba_open_account_league`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${accountSession.access_token}`
+              },
+              body: JSON.stringify({
+                p_league_id: league.league_id
+              })
+            }
+          );
+
+          const result = await response.json();
+
+          if (!response.ok) {
+            throw new Error(
+              result.message ||
+              result.details ||
+              result.hint ||
+              'Could not open this league.'
+            );
+          }
+
+          state = result;
+
+          session = {
+            leagueId: result.league_id,
+            token: null,
+            name: result.you.display_name,
+            isAdmin: result.you.is_admin,
+            accountBased: true
+          };
+
+          showApp();
+          render();
+        } catch (error) {
+          alert(error.message || 'Could not open this league.');
+        } finally {
+          button.disabled = false;
+          button.textContent = 'Open League';
+        }
+      });
+
+      card.append(title, gm, role, draft, button);
       container.appendChild(card);
     });
   } catch (error) {
     container.textContent = errText(error);
   }
 }
+
+
 
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, character => ({
