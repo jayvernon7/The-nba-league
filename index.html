@@ -68,7 +68,7 @@
 <div class="panel"><h2>Join a league</h2><p class="muted">Have an invite code? Join your league from any device.</p><form id="joinForm"><div class="field"><label for="inviteCodeInput">INVITATION CODE</label><input id="inviteCodeInput" maxlength="16" placeholder="e.g. 1A2B3C4D" required></div><div class="field"><label for="joinName">YOUR GM NAME</label><input id="joinName" maxlength="32" placeholder="Choose a unique name" required></div><button type="submit">Join League</button></form><div id="joinStatus" class="status"></div></div>
 </section>
 <section id="app" class="hidden">
-<div id="leagueNav" class="panel row" aria-label="League pages"><button type="button" class="navtab" data-page="home">League Home</button><button type="button" class="secondary navtab" data-page="leagues">My Leagues</button><button type="button" class="secondary navtab" data-page="draft">Draft Room</button><button type="button" class="secondary navtab" data-page="myprofile">My Profile</button></div>
+<div id="leagueNav" class="panel row" aria-label="League pages"><button type="button" class="secondary navtab" data-page="leagues">My Leagues</button><button type="button" class="navtab" data-page="home">League Home</button><button type="button" class="secondary navtab" data-page="draft">Draft Room</button><button type="button" class="secondary navtab" data-page="myprofile">My Profile</button></div>
 <div id="leagueDashboardPanel" class="panel"><div class="sectionhead"><div><div class="eyebrow">LEAGUE DASHBOARD</div><h2 id="leagueTitle">The NBA League</h2><div class="muted small" id="youLabel"></div></div><div class="row"><button class="secondary" id="copyInviteBtn">Copy Invite Code</button><button class="secondary" id="leaveBtn">Leave on this device</button></div>
 </div>
 <div id="inviteArea" class="notice hidden"><div class="small">COMMISSIONER INVITE CODE — share this with your GMs</div><div class="row between"><span class="invite" id="inviteCodeDisplay"></span><button id="copyInviteBtn2">Copy Code</button></div></div>
@@ -441,6 +441,7 @@ async function loadMyLeagues(containerId = 'myLeaguesList') {
             accountBased: true
           };
           saveSession();
+          currentLeaguePage = 'home';
           showApp();
           render();
         } catch (error) {
@@ -499,6 +500,7 @@ accountSession = {
 
     localStorage.setItem('nbaAccountSession', JSON.stringify(accountSession));
     setStatus('accountLoginStatus', 'Login successful.');
+accountPage = 'leagues';
 showAccountScreen();
   } catch (error) {
     setStatus('accountLoginStatus', errText(error));
