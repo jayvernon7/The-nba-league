@@ -95,6 +95,17 @@
     <div class="tablewrap"><table><thead><tr><th>Rank</th><th>Owner</th><th>Teams</th><th>Wins</th><th>Losses</th><th>Points</th></tr></thead><tbody id="homeFantasyStandingsBody"></tbody></table></div>
   </div>
   <div class="panel"><div class="eyebrow">OWNER PROFILES</div><h2>General Managers</h2><p class="muted">Choose an owner to see their drafted NBA teams, records, and schedules.</p><div id="homeOwnerProfiles" class="teamgrid"></div><div id="homeOwnerProfileDetail" class="panel hidden"></div></div>
+  <div class="panel" id="homeNbaSchedulePanel">
+    <div class="eyebrow">NBA SCHEDULE</div>
+    <h2>League-Wide NBA Schedule</h2>
+    <div class="row between schedule-date-row">
+      <button type="button" class="secondary date-arrow" id="homeSchedulePrevDate" aria-label="Previous date">‹</button>
+      <h2 id="homeScheduleSelectedDate" class="schedule-selected-date"></h2>
+      <button type="button" class="secondary date-arrow" id="homeScheduleNextDate" aria-label="Next date">›</button>
+    </div>
+    <p class="muted small">The NBA games scheduled for this date will appear here when live NBA schedule data is connected.</p>
+    <div id="homeNbaScheduleContent" class="empty">Live NBA schedule data has not been connected yet.</div>
+  </div>
 </section>
 <section id="ownersPage" class="hidden">
   <div class="panel"><div class="eyebrow">MY PROFILE</div><h2 id="myProfileHeading">My Profile</h2><p class="muted">Your league ranking and the NBA teams you own.</p><div id="myProfileDetail"></div></div>
@@ -265,6 +276,7 @@ $('draftResults').innerHTML=state.picks.length?state.picks.map(p=>`<div class="p
 showLeaguePage(currentLeaguePage);}
 
 function renderPostDraftHome(){
+  renderHomeNbaScheduleDate();
   const records = state.records || {};
   const rows = state.members.map(m => {
     const owned = state.picks.filter(p => p.member === m.display_name);
@@ -313,6 +325,9 @@ function renderOwnerProfiles(){
   }).join('')||'<div class="empty">No teams drafted yet. Your teams will appear here after you draft or are assigned NBA teams.</div>';
   $('myProfileHeading').textContent=ownerName ? ownerName+"'s Profile" : 'My Profile';
   $('myProfileDetail').innerHTML='<div class="stats"><div class="stat"><b>#'+rank+'</b><span>LEAGUE RANK</span></div><div class="stat"><b>'+ (me?.picks.length||0)+'</b><span>NBA TEAMS</span></div><div class="stat"><b>'+(me?.wins||0)+'</b><span>TEAM WINS</span></div><div class="stat"><b>'+(me?.losses||0)+'</b><span>TEAM LOSSES</span></div><div class="stat"><div><b>'+((me?.points||0)>0?'+':'')+(me?.points||0)+'</b></div><span>FANTASY POINTS</span></div></div><div class="eyebrow" style="margin:18px 0 10px">MY NBA TEAMS</div><div class="teamgrid">'+cards+'</div>';
+  const ownerCards=$('homeOwnerProfiles');
+  ownerCards.innerHTML=owners.map(o=>'<button type="button" class="team" data-owner-profile="'+esc(o.name)+'"><span class="abbr">'+(o.admin?'★':'GM')+'</span><span><span class="teamname">'+esc(o.name)+'</span><span class="tag">'+o.picks.length+' NBA teams · '+(o.points>0?'+':'')+o.points+' fantasy pts</span><span class="tag">View teams and records ↗</span></span></button>').join('')||'<div class="empty">League owners will appear here.</div>';
+  ownerCards.querySelectorAll('[data-owner-profile]').forEach(button=>button.addEventListener('click',()=>renderHomeOwnerDetail(button.dataset.ownerProfile,owners)));
   renderScheduleDate();
 }
 function scheduleDateValue(){
@@ -333,6 +348,24 @@ function changeScheduleDate(delta){
 }
 $('schedulePrevDate').addEventListener('click',()=>changeScheduleDate(-1));
 $('scheduleNextDate').addEventListener('click',()=>changeScheduleDate(1));
+function homeScheduleDateValue(){
+  if(!window.homeNbaScheduleDate){
+    const d=new Date();d.setHours(12,0,0,0);window.homeNbaScheduleDate=d;
+  }
+  return window.homeNbaScheduleDate;
+}
+function renderHomeNbaScheduleDate(){
+  const d=homeScheduleDateValue();
+  const label=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const node=$('homeScheduleSelectedDate');if(node)node.textContent=label;
+  const content=$('homeNbaScheduleContent');
+  if(content)content.textContent='The NBA games scheduled for '+label+' will appear here once live NBA schedule data is connected.';
+}
+function changeHomeNbaScheduleDate(delta){
+  const d=new Date(homeScheduleDateValue());d.setDate(d.getDate()+delta);d.setHours(12,0,0,0);window.homeNbaScheduleDate=d;renderHomeNbaScheduleDate();
+}
+$('homeSchedulePrevDate').addEventListener('click',()=>changeHomeNbaScheduleDate(-1));
+$('homeScheduleNextDate').addEventListener('click',()=>changeHomeNbaScheduleDate(1));
 function renderHomeOwnerDetail(name,owners){
   const o=owners.find(x=>x.name===name);if(!o)return;const records=state.records||{};
   const slugs={ATL:'hawks',BOS:'celtics',BKN:'nets',CHA:'hornets',CHI:'bulls',CLE:'cavaliers',DAL:'mavericks',DEN:'nuggets',DET:'pistons',GSW:'warriors',HOU:'rockets',IND:'pacers',LAC:'clippers',LAL:'lakers',MEM:'grizzlies',MIA:'heat',MIL:'bucks',MIN:'timberwolves',NOP:'pelicans',NYK:'knicks',OKC:'thunder',ORL:'magic',PHI:'76ers',PHX:'suns',POR:'trail-blazers',SAC:'kings',SAS:'spurs',TOR:'raptors',UTA:'jazz',WAS:'wizards'};
