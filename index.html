@@ -250,7 +250,7 @@ $('leagueTitle').textContent=state.league_name;$('youLabel').textContent=`Signed
 $('pickHint').textContent=!state.started?'The commissioner can start the draft when everyone has joined.':state.picks.length>=30?'All 30 NBA teams have been drafted.':turn?.id===state.you.member_id?'It is your turn — select an available NBA team.':`Waiting for ${turn?.display_name||'the next GM'} to pick.`;
 const taken=new Map(state.picks.map(p=>[p.team,p]));$('poolLabel').textContent=`${30-taken.size} available`;$('teamGrid').innerHTML=TEAMS.map(([name,abbr])=>{const p=taken.get(name),isTurn=turn?.id===state.you.member_id;return `<button class="team" ${p||!state.started||!isTurn?'disabled':''} data-team="${name}"><span class="abbr">${abbr}</span><span><span class="teamname">${name}</span>${p?`<span class="tag">Drafted by ${esc(p.member)}</span>`:state.started&&isTurn?'<span class="tag">Tap to draft</span>':''}</span></button>`}).join('');document.querySelectorAll('[data-team]').forEach(b=>b.addEventListener('click',()=>act('nba_make_pick',{p_team_name:b.dataset.team,},`Drafted ${b.dataset.team}.`)));
 $('draftResults').innerHTML=state.picks.length?state.picks.map(p=>`<div class="pickrow"><span class="picknum">#${p.number}<br>R${p.round}</span><span><span class="pickteam">${esc(p.team)}</span><br><span class="pickowner">${esc(p.member)}</span></span><span class="abbr">${p.abbr}</span></div>`).join(''):'<div class="empty">No teams drafted yet.</div>';
-const owners={};state.picks.forEach(p=>owners[p.team]=p.member);const records=state.records||{};const sorted=TEAMS.map(([name,abbr])=>({name,abbr,owner:owners[name]||'—',w:Number(records[name]?.w||0),l:Number(records[name]?.l||0)})).sort((a,b)=>{const ap=a.w+a.l? a.w/(a.w+a.l):-1,bp=b.w+b.l?b.w/(b.w+b.l):-1;return bp-ap||b.w-a.w||a.name.localeCompare(b.name)});$('standingsBody').innerHTML=sorted.map(t=>`<tr><td><b>${t.abbr}</b> ${t.name}</td><td>${esc(t.owner)}</td><td><input class="recordinput" type="number" min="0" max="82" value="${t.w}" data-win="${t.name}" ${state.you.is_admin?'':'disabled'}></td><td><input class="recordinput" type="number" min="0" max="82" value="${t.l}" data-loss="${t.name}" ${state.you.is_admin?'':'disabled'}></td><td>${t.w+t.l?(100*t.w/(t.w+t.l)).toFixed(1)+'%':'—'}</td></tr>`).join('');$('saveRecordsBtn').classList.toggle('hidden',!state.you.is_admin);$('clearRecordsBtn').classList.toggle('hidden',!state.you.is_admin);showLeaguePage(currentLeaguePage);}
+showLeaguePage(currentLeaguePage);}
 
 function renderPostDraftHome(){
   const records = state.records || {};
@@ -463,6 +463,9 @@ async function loadMyLeagues() {
     });
   } catch (error) {
     container.textContent = errText(error);
+    // Keep the saved account session, but expose the login form if it needs re-authentication.
+    $('accountScreen').classList.remove('hidden');
+    setStatus('accountLoginStatus', 'Please log in again: ' + errText(error));
   }
 }
 
