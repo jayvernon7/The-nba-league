@@ -352,14 +352,27 @@ function gameStatusLabel(game){
   return formatGameTime(game.start_time);
 }
 function renderGameRows(games, onlyOwned=false){
-  const ownedAbbr=new Set((state?.picks||[]).filter(p=>p.member===state?.you?.display_name).map(p=>p.abbr));
-  const rows=(games||[]).filter(g=>!onlyOwned||ownedAbbr.has(g.home_team?.abbreviation)||ownedAbbr.has(g.away_team?.abbreviation));
+  const ownerName=state?.you?.display_name||session?.name||'';
+  const ownedPicks=(state?.picks||[]).filter(p=>p.member===ownerName);
+  const ownedNames=new Set(ownedPicks.map(p=>String(p.team||'').toLowerCase()));
+  const ownedAbbr=new Set(ownedPicks.map(p=>String(p.abbr||'').toUpperCase()));
+  const teamName=value=>typeof value==='string'?value:String(value?.name||value?.full_name||value?.display_name||'');
+  const teamAbbr=value=>String(typeof value==='object'?(value?.abbreviation||value?.abbr||''):'').toUpperCase();
+  const isOwned=value=>{
+    const name=teamName(value).toLowerCase();
+    const abbr=teamAbbr(value);
+    return (name&&ownedNames.has(name))||(abbr&&ownedAbbr.has(abbr));
+  };
+  const rows=(games||[]).filter(g=>!onlyOwned||isOwned(g.home_team)||isOwned(g.away_team));
   if(!rows.length)return '<div class="empty">'+(onlyOwned?'No games involving your drafted teams on this date.':'No NBA games scheduled for this date.')+'</div>';
   return '<div class="teamgrid">'+rows.map(g=>{
     const away=g.away_team||{},home=g.home_team||{};
+    const awayName=teamName(away)||'Away team',homeName=teamName(home)||'Home team';
+    const awayAbbr=teamAbbr(away)||(TEAMS.find(t=>t[0].toLowerCase()===awayName.toLowerCase())||[])[1]||'AWAY';
+    const homeAbbr=teamAbbr(home)||(TEAMS.find(t=>t[0].toLowerCase()===homeName.toLowerCase())||[])[1]||'HOME';
     const hasScores=g.away_score!==null&&g.away_score!==undefined&&g.home_score!==null&&g.home_score!==undefined;
     const score=hasScores?'<b class="tag">'+esc(g.away_score)+' – '+esc(g.home_score)+'</b>':'<span class="tag">'+esc(gameStatusLabel(g))+'</span>';
-    return '<div class="team"><span class="abbr">'+esc(away.abbreviation||'AWAY')+'</span><span><span class="teamname">'+esc(away.name||'Away team')+' @ '+esc(home.name||'Home team')+'</span><span class="tag">'+esc(gameStatusLabel(g))+'</span>'+score+'</span><span class="abbr">'+esc(home.abbreviation||'HOME')+'</span></div>';
+    return '<div class="team"><span class="abbr">'+esc(awayAbbr)+'</span><span><span class="teamname">'+esc(awayName)+' @ '+esc(homeName)+'</span><span class="tag">'+esc(gameStatusLabel(g))+'</span>'+score+'</span><span class="abbr">'+esc(homeAbbr)+'</span></div>';
   }).join('')+'</div>';
 }
 function updateRecordsFromStandings(standings){
