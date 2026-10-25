@@ -536,7 +536,7 @@ function renderGameRows(games, onlyOwned=false, gameDate=''){
     const hasScores=g.away_score!==null&&g.away_score!==undefined&&g.home_score!==null&&g.home_score!==undefined;
     const isFinal=String(g.status||'').toLowerCase()==='final';
     const score=hasScores?(isFinal?'<button type="button" class="boxscore-trigger" data-boxscore="1" data-date="'+esc(gameDate||g.date||g.game_date||'')+'" data-away="'+esc(awayAbbr)+'" data-home="'+esc(homeAbbr)+'" data-away-name="'+esc(awayName)+'" data-home-name="'+esc(homeName)+'" data-away-score="'+esc(g.away_score)+'" data-home-score="'+esc(g.home_score)+'">View Box Score · '+esc(g.away_score)+' – '+esc(g.home_score)+'</button>':'<b class="tag">'+esc(g.away_score)+' – '+esc(g.home_score)+'</b>'):'';
-    return '<div class="team"><span class="abbr">'+esc(awayAbbr)+'</span><span><span class="teamname">'+esc(awayName)+' @ '+esc(homeName)+'</span><span class="tag">'+esc(gameStatusLabel(g))+'</span>'+score+'</span><span class="abbr">'+esc(homeAbbr)+'</span></div>';
+    return '<div class="team"><span class="abbr">'+esc(awayAbbr)+'</span><span><span class="teamname">'+esc(awayDisplay)+' @ '+esc(homeDisplay)+'</span><span class="tag">'+esc(gameStatusLabel(g))+'</span>'+score+'</span><span class="abbr">'+esc(homeAbbr)+'</span></div>';
   }).join('')+'</div>';
 }
 function updateRecordsFromStandings(standings){
