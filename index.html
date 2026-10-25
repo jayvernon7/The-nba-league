@@ -75,7 +75,6 @@
 <h2>General Managers</h2><div id="members" class="memberlist"></div><div id="commissionerTools" class="row" style="margin-top:15px"><button id="randomizeBtn" class="secondary">Randomize Draft Order</button><button id="startBtn">Start Draft</button><button id="undoBtn" class="secondary">Undo Last Pick</button><button id="resetBtn" class="danger">Reset League Draft</button></div><div id="leagueStatus" class="status"></div></div>
 <div id="draftWorkspace"><div class="grid"><div class="panel"><div class="sectionhead"><h2>NBA Team Pool</h2><span class="pill" id="poolLabel">30 available</span></div><p class="muted small" id="pickHint">The commissioner can start the draft when everyone has joined.</p><div id="teamGrid" class="teamgrid"></div></div>
 <div class="panel"><div class="sectionhead"><h2>Draft Results</h2><span class="pill">Snake draft</span></div><div id="draftResults"><div class="empty">No teams drafted yet.</div></div></div></div>
-<div id="teamRecordsPanel" class="panel"><div class="sectionhead"><div><h2>Team Records & Standings</h2><p class="muted small">Commissioner can enter each NBA team's wins and losses. Standings sort by win percentage.</p></div><div class="row"><button id="saveRecordsBtn">Save Records</button><button id="clearRecordsBtn" class="secondary">Clear Records</button></div></div><div class="tablewrap"><table><thead><tr><th>NBA Team</th><th>GM</th><th>W</th><th>L</th><th>Win %</th></tr></thead><tbody id="standingsBody"></tbody></table></div></div>
 </div>
 <section id="postDraftHome">
   <div class="panel">
@@ -278,7 +277,6 @@ function showLeaguePage(page){
   $('leagueDashboardPanel').classList.toggle('hidden', page !== 'draft');
   $('postDraftHome').classList.toggle('hidden', page !== 'home');
   $('draftWorkspace').classList.toggle('hidden', page !== 'draft');
-  $('teamRecordsPanel').classList.toggle('hidden', page !== 'draft');
   $('ownersPage').classList.toggle('hidden', page !== 'owners');
   document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('secondary',!active);b.setAttribute('aria-current',active?'page':'false');});
 }
