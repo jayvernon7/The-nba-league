@@ -79,21 +79,9 @@
 </div>
 <section id="postDraftHome">
   <div class="panel">
-    <div class="eyebrow">LEAGUE STANDINGS</div>
-    <h2>League Fantasy Standings</h2>
-    <p class="muted small">Fantasy points = combined NBA team wins − losses. Ties break by combined team wins.</p>
-    <div class="tablewrap"><table><thead><tr><th>Rank</th><th>Owner</th><th>Teams</th><th>Wins</th><th>Losses</th><th>Points</th></tr></thead><tbody id="homeFantasyStandingsBody"></tbody></table></div>
-  </div>
-  <div class="panel">
-    <div class="eyebrow">OWNER TEAM RECORDS</div>
-    <h2>Owners &amp; Team Records</h2>
-    <p class="muted small">Records currently reflect values entered by the commissioner. Live NBA results are not connected yet.</p>
-    <div id="homeOwnerRecords" class="grid"></div>
-  </div>
-  <div class="panel">
     <div class="eyebrow">LEAGUE HOME</div>
-    <h2>Draft complete — welcome to your league</h2>
-    <p class="muted">All 30 NBA teams have been drafted. Fantasy points are each GM's teams' wins minus losses.</p>
+    <h2>Welcome to your league</h2>
+    <p class="muted">All 30 NBA teams are drafted. Fantasy points are each GM's teams' wins minus losses.</p>
     <div class="stats">
       <div class="stat"><b id="homeTeamCount">30</b><span>TEAMS DRAFTED</span></div>
       <div class="stat"><b id="homeMemberCount">—</b><span>GENERAL MANAGERS</span></div>
@@ -101,14 +89,10 @@
     </div>
   </div>
   <div class="panel">
-    <h2>Fantasy Standings</h2>
-    <p class="muted small">Points = wins − losses. Ties break by combined team wins.</p>
-    <div class="tablewrap"><table><thead><tr><th>Rank</th><th>General Manager</th><th>Teams</th><th>Wins</th><th>Losses</th><th>Points</th></tr></thead><tbody id="fantasyStandingsBody"></tbody></table></div>
-  </div>
-  <div class="panel">
-    <h2>Team Ownership</h2>
-    <p class="muted small">Every drafted NBA team and its general manager.</p>
-    <div id="teamOwnershipGrid" class="teamgrid"></div>
+    <div class="eyebrow">LEAGUE STANDINGS</div>
+    <h2>League Fantasy Standings</h2>
+    <p class="muted small">Fantasy points = combined NBA team wins − losses. Ties break by combined team wins.</p>
+    <div class="tablewrap"><table><thead><tr><th>Rank</th><th>Owner</th><th>Teams</th><th>Wins</th><th>Losses</th><th>Points</th></tr></thead><tbody id="homeFantasyStandingsBody"></tbody></table></div>
   </div>
 </section>
 <section id="ownersPage" class="hidden">
@@ -271,8 +255,6 @@ const owners={};state.picks.forEach(p=>owners[p.team]=p.member);const records=st
 
 function renderPostDraftHome(){
   const records = state.records || {};
-  const ownerByTeam = {};
-  state.picks.forEach(p => { ownerByTeam[p.team] = p.member; });
   const rows = state.members.map(m => {
     const owned = state.picks.filter(p => p.member === m.display_name);
     let wins = 0, losses = 0;
@@ -285,17 +267,15 @@ function renderPostDraftHome(){
   $('homeTeamCount').textContent = state.picks.length;
   $('homeMemberCount').textContent = state.members.length;
   $('homeRecordCount').textContent = TEAMS.filter(([name]) => records[name] && Number(records[name].w||0)+Number(records[name].l||0)>0).length;
-  $('fantasyStandingsBody').innerHTML = rows.map((m,i) => `<tr><td>${i+1}</td><td><b>${esc(m.name)}</b></td><td>${m.teams}</td><td>${m.wins}</td><td>${m.losses}</td><td><b>${m.points>0?'+':''}${m.points}</b></td></tr>`).join('');
+  
   $('homeFantasyStandingsBody').innerHTML = rows.map((m,i) => `<tr><td>${i+1}</td><td><b>${esc(m.name)}</b></td><td>${m.teams}</td><td>${m.wins}</td><td>${m.losses}</td><td><b>${m.points>0?'+':''}${m.points}</b></td></tr>`).join('');
-  $('homeOwnerRecords').innerHTML = state.members.map(m => { const picks=state.picks.filter(p=>p.member===m.display_name); const totals=picks.reduce((a,p)=>({w:a.w+Number(records[p.team]?.w||0),l:a.l+Number(records[p.team]?.l||0)}),{w:0,l:0}); return `<div class="panel"><h2>${esc(m.display_name)}</h2><p class="muted small">${picks.length} teams · ${totals.w} wins · ${totals.l} losses · ${totals.w-totals.l>0?'+':''}${totals.w-totals.l} points</p><div class="tablewrap"><table><thead><tr><th>Team</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>${picks.map(p=>{const w=Number(records[p.team]?.w||0),l=Number(records[p.team]?.l||0);return `<tr><td>${esc(p.team)}</td><td>${w}</td><td>${l}</td><td>${w-l>0?'+':''}${w-l}</td></tr>`;}).join('')||'<tr><td colspan="4">No teams drafted yet.</td></tr>'}</tbody></table></div></div>`; }).join('');
-  $('teamOwnershipGrid').innerHTML = TEAMS.map(([name,abbr]) => `<div class="team"><span class="abbr">${abbr}</span><span><span class="teamname">${name}</span><span class="tag">GM: ${esc(ownerByTeam[name] || '—')}</span></span></div>`).join('');
 }
 
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 let currentLeaguePage = 'home';
 function showLeaguePage(page){
   currentLeaguePage = page;
-  $('leagueDashboardPanel').classList.toggle('hidden', page !== 'home');
+  $('leagueDashboardPanel').classList.toggle('hidden', page !== 'draft');
   $('postDraftHome').classList.toggle('hidden', page !== 'home');
   $('draftWorkspace').classList.toggle('hidden', page !== 'draft');
   $('teamRecordsPanel').classList.toggle('hidden', page !== 'draft');
