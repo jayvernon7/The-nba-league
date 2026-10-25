@@ -173,7 +173,7 @@ async function rpc(name,args){
 }
 
 function setStatus(id,msg){$(id).textContent=msg||''}function errText(e){return e?.message||'Something went wrong.'}
-function showApp(){ $('lobby').classList.toggle('hidden',!!session);$('app').classList.toggle('hidden',!session);if(session){$('inviteArea').classList.toggle('hidden',!inviteCode);$('inviteCodeDisplay').textContent=inviteCode;}}
+function showApp(){ $('lobby').classList.toggle('hidden',!!session);$('app').classList.toggle('hidden',!session);$('myLeaguesSection').classList.add('hidden');if(session){$('accountScreen').classList.add('hidden');$('accountPageTabs').classList.add('hidden');$('myLeaguesSection').classList.add('hidden');$('inviteArea').classList.toggle('hidden',!inviteCode);$('inviteCodeDisplay').textContent=inviteCode;}}
 function copyCode(){if(!inviteCode){setStatus('leagueStatus','Only the commissioner has the invite code on this device. Ask them to share it.');return;}if(navigator.clipboard?.writeText)navigator.clipboard.writeText(inviteCode).then(()=>setStatus('leagueStatus','Invite code copied.')).catch(()=>prompt('Copy this invite code:',inviteCode));else prompt('Copy this invite code:',inviteCode)}
 async function createLeague(e){e.preventDefault();setStatus('createStatus','Creating your league…');try{const d=await rpc('nba_create_league',{p_league_name:$('leagueName').value.trim()||'MyNba Teams',p_display_name:$('createName').value.trim(),p_member_limit:Number($('memberLimit').value)});session={leagueId:d.league_id,token:d.member_token,name:d.display_name,isAdmin:true};inviteCode=d.invite_code;session.inviteCode=inviteCode;saveSession();showApp();await refresh();setStatus('leagueStatus','League created. Share the invite code with your GMs.');}catch(e){setStatus('createStatus',errText(e));}}
 async function joinLeague(e){e.preventDefault();setStatus('joinStatus','Joining league…');try{const d=await rpc('nba_join_league',{p_invite_code:$('inviteCodeInput').value.trim().toUpperCase(),p_display_name:$('joinName').value.trim()});session={leagueId:d.league_id,token:d.member_token,name:d.display_name,isAdmin:false};inviteCode='';saveSession();showApp();await refresh();setStatus('leagueStatus','You joined the league.');}catch(e){setStatus('joinStatus',errText(e));}}
@@ -316,6 +316,7 @@ function renderPostDraftHome(skipSchedule=false){
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 let currentLeaguePage = 'home';
 function showLeaguePage(page){
+  const previousPage = currentLeaguePage;
   currentLeaguePage = page;
   $('leagueDashboardPanel').classList.toggle('hidden', page !== 'draft');
   $('postDraftHome').classList.toggle('hidden', page !== 'home');
@@ -323,7 +324,7 @@ function showLeaguePage(page){
   $('ownersPage').classList.toggle('hidden', page !== 'myprofile');
   $('teamDetailPage').classList.add('hidden');
   $('myLeaguesLeaguePage').classList.toggle('hidden', page !== 'leagues');
-  if (page === 'leagues' && currentLeaguePage !== 'leagues') loadMyLeagues('myLeaguesInLeagueList');
+  if (page === 'leagues' && previousPage !== 'leagues') loadMyLeagues('myLeaguesInLeagueList');
   document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('secondary',!active);b.setAttribute('aria-current',active?'page':'false');});
 }
 function renderOwnerProfiles(skipSchedule=false){
@@ -556,8 +557,11 @@ async function accountRequest(payload) {
 let accountPage = 'leagues';
 function showAccountPage(page) {
   accountPage = page;
+  $('accountScreen').classList.toggle('hidden', !!accountSession);
   $('myLeaguesSection').classList.toggle('hidden', !accountSession || !!session || page !== 'leagues');
   $('lobby').classList.toggle('hidden', !accountSession || !!session || page !== 'create');
+  $('app').classList.toggle('hidden', !!session || !accountSession);
+  $('accountPageTabs').classList.toggle('hidden', !accountSession || !!session);
   $('myLeaguesTab').classList.toggle('secondary', page !== 'leagues');
   $('createJoinTab').classList.toggle('secondary', page !== 'create');
   if (accountSession && !session && page === 'leagues') loadMyLeagues();
@@ -566,7 +570,7 @@ function showAccountScreen() {
   $('accountScreen').classList.toggle('hidden', !!accountSession);
   $('accountPageTabs').classList.toggle('hidden', !accountSession || !!session);
   $('logoutBtn').classList.toggle('hidden', !accountSession);
-  $('topMyLeaguesBtn').classList.toggle('hidden', !accountSession || !session);
+  $('topMyLeaguesBtn').classList.toggle('hidden', !accountSession);
   $('myLeaguesSection').classList.add('hidden');
   $('lobby').classList.add('hidden');
   $('app').classList.toggle('hidden', !session);
@@ -756,7 +760,7 @@ $('accountSignupForm').addEventListener('submit', async event => {
   }
 });
   
-$('topMyLeaguesBtn').addEventListener('click',()=>showLeaguePage('leagues'));
+$('topMyLeaguesBtn').addEventListener('click',()=>{if(session){showLeaguePage('leagues');}else if(accountSession){showAccountPage('leagues');}});
 $('myLeaguesTab').addEventListener('click',()=>showAccountPage('leagues'));
 $('createJoinTab').addEventListener('click',()=>showAccountPage('create'));
 $('logoutBtn').addEventListener('click', () => {
