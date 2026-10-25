@@ -5,7 +5,8 @@
 <meta name="theme-color" content="#0b1220"><title>MyNba Teams</title>
 <style>
 :root{--bg:#0b1220;--panel:#111c2e;--panel2:#17243a;--line:#26364e;--text:#f4f7fb;--muted:#9caec4;--blue:#78aaff;--blue2:#235ec7;--green:#45d6a0;--red:#ff7d8b;--gold:#f6c96b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#172a48 0,#0b1220 48%);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:11px 15px;background:var(--blue2);color:white;font-weight:700}button:disabled{opacity:.45;cursor:not-allowed}.secondary{background:#24334b}.danger{background:#783443}.wrap{max-width:1180px;margin:auto;padding:22px}.hero{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}.brand{display:flex;align-items:center;gap:13px}.ball{font-size:34px}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--blue);font-weight:800}.brand h1{font-size:clamp(27px,5vw,42px);margin:0;line-height:1.1}.sub{color:var(--muted);margin:7px 0 0}.pill{border:1px solid var(--line);border-radius:999px;padding:7px 12px;color:var(--muted);font-size:12px}.panel{background:rgba(17,28,46,.94);border:1px solid var(--line);border-radius:16px;padding:19px;margin-bottom:16px;box-shadow:0 12px 30px #0002}.panel h2{margin:0 0 12px;font-size:19px}.muted{color:var(--muted)}.small{font-size:12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}.field label{color:var(--muted);font-size:12px;font-weight:700}.field input,.field select{width:100%;background:#0b1423;color:var(--text);border:1px solid #33445e;border-radius:9px;padding:11px}.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.row.between{justify-content:space-between}.notice{padding:12px 14px;background:#0d1b2c;border:1px solid var(--line);border-radius:10px;color:var(--muted);margin:10px 0}.invite{font-size:24px;letter-spacing:3px;font-weight:900;color:var(--gold);font-family:ui-monospace,monospace}.hidden{display:none!important}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:12px 0}.stat{background:#0b1423;border:1px solid var(--line);padding:12px;border-radius:12px}.stat b{display:block;font-size:22px}.stat span{color:var(--muted);font-size:11px}.memberlist{display:flex;gap:8px;flex-wrap:wrap}.member{background:#0b1423;border:1px solid var(--line);padding:8px 10px;border-radius:9px;font-size:13px}.member.current{border-color:var(--blue);color:var(--blue)}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.teamgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.team{display:flex;align-items:center;gap:9px;text-align:left;background:#0b1423;border:1px solid var(--line);padding:10px;border-radius:10px;color:var(--text);min-width:0}.team:not(:disabled):hover{border-color:var(--blue)}.team:disabled{opacity:.55}.abbr{width:36px;height:36px;display:grid;place-items:center;background:#20324c;color:var(--blue);font-size:11px;font-weight:900;border-radius:9px;flex-shrink:0}.teamname{font-size:12px;font-weight:750}.tag{display:block;color:var(--green);font-size:10px;margin-top:2px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px}.recordinput{width:55px;background:#0b1423;color:white;border:1px solid #33445e;padding:6px;border-radius:7px}.pickrow{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.picknum{color:var(--muted);font-size:12px}.pickteam{font-weight:750}.pickowner{font-size:12px;color:var(--muted)}.empty{padding:25px;text-align:center;color:var(--muted)}.status{min-height:22px;color:var(--gold);font-size:13px;margin-top:8px}.footer{text-align:center;color:#71839b;font-size:11px;padding:20px}.topstatus{display:flex;gap:8px;flex-wrap:wrap;align-items:center}@media(max-width:760px){.grid{grid-template-columns:1fr}.teamgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:13px}.panel{padding:14px}}@media(max-width:420px){.teamgrid{grid-template-columns:1fr}.invite{font-size:20px}}
-.schedule-date-row{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;align-items:center;gap:12px;margin:12px 0 18px}.schedule-selected-date{text-align:center;margin:0;font-size:clamp(17px,2.5vw,23px)}.date-arrow{min-height:44px;font-size:30px;line-height:1;padding:6px}.schedule-date-row .date-arrow:last-child{justify-self:end}.schedule-date-row .date-arrow:first-child{justify-self:start}</style>
+.schedule-date-row{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;align-items:center;gap:12px;margin:12px 0 18px}.schedule-selected-date{text-align:center;margin:0;font-size:clamp(17px,2.5vw,23px)}.date-arrow{min-height:44px;font-size:30px;line-height:1;padding:6px}.schedule-date-row .date-arrow:last-child{justify-self:end}.schedule-date-row .date-arrow:first-child{justify-self:start}.boxscore-trigger{display:inline-flex;align-items:center;justify-content:center;min-height:38px;margin-top:6px;padding:7px 10px;border:1px solid #395779;border-radius:8px;background:#172b43;color:#b9d4ff;font-size:13px}.boxscore-trigger:hover{border-color:var(--blue)}#boxScoreModal{position:fixed;inset:0;z-index:1000;background:#050a12dd;display:flex;align-items:center;justify-content:center;padding:18px}#boxScoreModal.hidden{display:none!important}.boxscore-dialog{width:min(960px,100%);max-height:92vh;overflow:auto;background:#111c2e;border:1px solid #33445e;border-radius:16px;padding:18px;box-shadow:0 20px 70px #0009}.boxscore-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.boxscore-head h2{margin:0}.boxscore-teams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0}.boxscore-team{background:#0b1423;border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}.boxscore-team strong{display:block;overflow-wrap:anywhere}.boxscore-team b{font-size:25px}.boxscore-team.active{border-color:var(--blue)}.boxscore-table{overflow-x:auto;-webkit-overflow-scrolling:touch}.boxscore-table table{min-width:640px;font-size:12px}.boxscore-table th,.boxscore-table td{white-space:nowrap;padding:9px 7px}.boxscore-team-switch{margin-bottom:12px}.boxscore-status{color:var(--muted);font-size:13px;margin:10px 0}.boxscore-player-name{font-weight:700}.boxscore-dnp{color:var(--muted);font-style:italic}@media(max-width:600px){#boxScoreModal{padding:0;align-items:stretch}.boxscore-dialog{width:100%;max-height:100vh;max-height:100dvh;height:100%;border-radius:0;border:0;padding:14px}.boxscore-head{position:sticky;top:-14px;background:#111c2e;padding:10px 0;z-index:2}.boxscore-teams{gap:7px}.boxscore-team{padding:9px}.boxscore-team b{font-size:22px}.boxscore-table table{min-width:610px}.boxscore-trigger{min-height:44px}}
+</style>
 </head>
 <body><main class="wrap">
 <header class="hero"><div class="brand"><div class="ball">🏀</div><div><div class="eyebrow">YOUR FRONT OFFICE STARTS HERE</div><h1>MyNba Teams</h1><p class="sub">One league. 30 NBA teams. Your general manager era.</p></div></div><div class="topstatus"><span class="pill" id="connection">Connecting…</span><button type="button" class="secondary hidden" id="topMyLeaguesBtn">My Leagues</button><button class="danger hidden" id="logoutBtn">Log Out</button></div></header>
@@ -138,6 +139,10 @@
 </section>
 <section id="myLeaguesLeaguePage" class="hidden"><div class="panel"><div class="eyebrow">MY LEAGUES</div><h2>Your Leagues</h2><p class="muted">Choose a league connected to your account.</p><div id="myLeaguesInLeagueList"></div></div></section>
 </section><div class="footer">MyNba Teams · Shared league state powered by Supabase · Keep your device membership private.</div></main>
+<div id="boxScoreModal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="boxScoreTitle" aria-hidden="true">
+  <section class="boxscore-dialog"><div class="boxscore-head"><div><div class="eyebrow">FINAL GAME BOX SCORE</div><h2 id="boxScoreTitle">Box Score</h2><p id="boxScoreSubtitle" class="muted small"></p></div><button type="button" id="closeBoxScoreBtn" class="secondary" aria-label="Close box score">✕ Close</button></div>
+  <div id="boxScoreTeams" class="boxscore-teams"></div><div id="boxScoreTeamSwitch" class="row boxscore-team-switch"></div><div id="boxScoreStatus" class="boxscore-status" aria-live="polite">Loading player statistics…</div><div id="boxScorePlayers" class="boxscore-table"></div></section>
+</div>
 <script>
 const SUPABASE_URL='https://pwpmehyuyaxudfkxbtjh.supabase.co';
 const SUPABASE_KEY='sb_publishable_DeYrI1Q0e8SZL9EOnqaqOw_fkFMwdtw';
@@ -294,6 +299,93 @@ if(selectedTeamName && !$('teamDetailPage').classList.contains('hidden')){
   $('postDraftHome').classList.add('hidden');$('draftWorkspace').classList.add('hidden');$('ownersPage').classList.add('hidden');$('myLeaguesLeaguePage').classList.add('hidden');
 } else { showLeaguePage(currentLeaguePage); }}
 
+
+let activeBoxScoreTeams=[];
+function normalizedTeamCode(value){return String(value||'').toUpperCase().replace(/[^A-Z]/g,'');}
+function boxScoreStatus(message){$('boxScoreStatus').textContent=message;}
+function closeBoxScore(){const modal=$('boxScoreModal');modal.classList.add('hidden');modal.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+function showBoxScoreModal(){const modal=$('boxScoreModal');modal.classList.remove('hidden');modal.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';$('closeBoxScoreBtn').focus();}
+function getEspnPlayerRows(summary){
+  const teams=summary?.boxscore?.players||[];
+  return teams.map(teamBlock=>{
+    const team=teamBlock.team||{};
+    const players=[];
+    for(const category of (teamBlock.statistics||[])){
+      const labels=category.names||category.labels||category.keys||[];
+      for(const athleteRow of (category.athletes||[])){
+        const athlete=athleteRow.athlete||{};
+        const values=athleteRow.stats||[];
+        const stats={};
+        labels.forEach((label,index)=>stats[String(label).toUpperCase()]=values[index]??'—');
+        players.push({name:athlete.displayName||athlete.fullName||'Player',stats,didNotPlay:!!athleteRow.didNotPlay,reason:athleteRow.reason||''});
+      }
+    }
+    return {id:String(team.id||teamBlock.team?.abbreviation||team.displayName||''),name:team.displayName||team.name||'Team',abbreviation:team.abbreviation||'',players};
+  });
+}
+function statValue(stats,keys){
+  for(const key of keys){if(stats[key]!==undefined&&stats[key]!==null&&stats[key]!=='')return stats[key];}
+  return '—';
+}
+function renderBoxScoreTeam(team){
+  $('boxScorePlayers').innerHTML='';
+  if(!team){boxScoreStatus('Player statistics are not available for this game yet.');return;}
+  const table=document.createElement('table');
+  table.innerHTML='<thead><tr><th>Player</th><th>MIN</th><th>FG</th><th>3PT</th><th>FT</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TO</th><th>PTS</th></tr></thead>';
+  const tbody=document.createElement('tbody');
+  team.players.forEach(player=>{
+    const s=player.stats||{},tr=document.createElement('tr');
+    const name=document.createElement('td');name.className='boxscore-player-name';name.textContent=player.name+(player.didNotPlay?' (DNP)':'');tr.appendChild(name);
+    const fields=[
+      ['MIN',['MIN','MINUTES']],['FG',['FG','FGM-A','FGM/A']],['3PT',['3PT','3P','3PT-FG']],['FT',['FT','FTM-A','FTM/A']],
+      ['REB',['REB','REBOUNDS']],['AST',['AST','ASSISTS']],['STL',['STL','STEALS']],['BLK',['BLK','BLOCKS']],['TO',['TO','TOV','TURNOVERS']],['PTS',['PTS','POINTS']]
+    ];
+    fields.forEach(([label,keys])=>{const td=document.createElement('td');td.textContent=statValue(s,keys);td.setAttribute('data-stat',label);tr.appendChild(td);});
+    tbody.appendChild(tr);
+  });
+  if(!team.players.length){boxScoreStatus('ESPN did not return player rows for this game.');return;}
+  table.appendChild(tbody);$('boxScorePlayers').appendChild(table);
+  boxScoreStatus(team.players.length+' player rows · stats supplied by ESPN. Swipe the table sideways on a phone to see every column.');
+  $('boxScoreTeamSwitch').querySelectorAll('button').forEach(button=>button.classList.toggle('secondary',button.dataset.teamId!==team.id));
+}
+async function openBoxScore(button){
+  const date=button.dataset.date,away=button.dataset.away,home=button.dataset.home;
+  $('boxScoreTitle').textContent=button.dataset.awayName+' @ '+button.dataset.homeName;
+  $('boxScoreSubtitle').textContent='Final · '+button.dataset.awayScore+' – '+button.dataset.homeScore+' · Player box score';
+  $('boxScoreTeams').innerHTML='<div class="boxscore-team"><strong>'+escapeHtml(button.dataset.awayName)+'</strong><b>'+escapeHtml(button.dataset.awayScore)+'</b></div><div class="boxscore-team"><strong>'+escapeHtml(button.dataset.homeName)+'</strong><b>'+escapeHtml(button.dataset.homeScore)+'</b></div>';
+  $('boxScoreTeamSwitch').innerHTML='';$('boxScorePlayers').innerHTML='';boxScoreStatus('Finding the completed game and loading player statistics…');showBoxScoreModal();
+  try{
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Error('The game date is missing. Change the schedule date and try again.');
+    const dateCompact=date.replace(/-/g,'');
+    const boardResponse=await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard?dates='+dateCompact);
+    if(!boardResponse.ok)throw new Error('The NBA scoreboard source is temporarily unavailable.');
+    const board=await boardResponse.json();
+    const events=board.events||[];
+    const event=events.find(item=>{
+      const competitors=item.competitions?.[0]?.competitors||[];
+      const codes=competitors.map(x=>normalizedTeamCode(x.team?.abbreviation));
+      return codes.includes(normalizedTeamCode(away))&&codes.includes(normalizedTeamCode(home));
+    });
+    if(!event)throw new Error('Could not match this game to the box-score provider for '+date+'.');
+    const summaryResponse=await fetch('https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event='+encodeURIComponent(event.id));
+    if(!summaryResponse.ok)throw new Error('Player box-score data is temporarily unavailable.');
+    const summary=await summaryResponse.json();
+    activeBoxScoreTeams=getEspnPlayerRows(summary);
+    const switcher=$('boxScoreTeamSwitch');
+    activeBoxScoreTeams.forEach((team,index)=>{
+      const btn=document.createElement('button');btn.type='button';btn.className=index?'secondary':'';btn.dataset.teamId=team.id;btn.textContent=team.name;
+      btn.addEventListener('click',()=>renderBoxScoreTeam(team));switcher.appendChild(btn);
+    });
+    const firstTeam=activeBoxScoreTeams.find(t=>normalizedTeamCode(t.abbreviation)===normalizedTeamCode(away))||activeBoxScoreTeams[0];
+    if(!activeBoxScoreTeams.length)throw new Error('The provider did not return player box-score rows for this game.');
+    renderBoxScoreTeam(firstTeam);
+  }catch(error){boxScoreStatus((error.message||'Could not load player box score.')+' You can close this window and try again later.');}
+}
+document.addEventListener('click',event=>{const button=event.target.closest('[data-boxscore="1"]');if(button)openBoxScore(button);});
+$('closeBoxScoreBtn').addEventListener('click',closeBoxScore);
+$('boxScoreModal').addEventListener('click',event=>{if(event.target===$('boxScoreModal'))closeBoxScore();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!$('boxScoreModal').classList.contains('hidden'))closeBoxScore();});
+
 function renderPostDraftHome(skipSchedule=false){
   if(!skipSchedule) renderHomeNbaScheduleDate();
   const records = state.records || {};
@@ -418,7 +510,7 @@ function gameStatusLabel(game){
   if(s==='delayed')return 'Delayed';
   return formatGameTime(game.start_time);
 }
-function renderGameRows(games, onlyOwned=false){
+function renderGameRows(games, onlyOwned=false, gameDate=''){
   const ownerName=state?.you?.display_name||session?.name||'';
   const ownedPicks=(state?.picks||[]).filter(p=>p.member===ownerName);
   const ownedNames=new Set(ownedPicks.map(p=>String(p.team||'').toLowerCase()));
@@ -438,7 +530,8 @@ function renderGameRows(games, onlyOwned=false){
     const awayAbbr=teamAbbr(away)||(TEAMS.find(t=>t[0].toLowerCase()===awayName.toLowerCase())||[])[1]||'AWAY';
     const homeAbbr=teamAbbr(home)||(TEAMS.find(t=>t[0].toLowerCase()===homeName.toLowerCase())||[])[1]||'HOME';
     const hasScores=g.away_score!==null&&g.away_score!==undefined&&g.home_score!==null&&g.home_score!==undefined;
-    const score=hasScores?'<b class="tag">'+esc(g.away_score)+' – '+esc(g.home_score)+'</b>':'';
+    const isFinal=String(g.status||'').toLowerCase()==='final';
+    const score=hasScores?(isFinal?'<button type="button" class="boxscore-trigger" data-boxscore="1" data-date="'+esc(gameDate||g.date||g.game_date||'')+'" data-away="'+esc(awayAbbr)+'" data-home="'+esc(homeAbbr)+'" data-away-name="'+esc(awayName)+'" data-home-name="'+esc(homeName)+'" data-away-score="'+esc(g.away_score)+'" data-home-score="'+esc(g.home_score)+'">View Box Score · '+esc(g.away_score)+' – '+esc(g.home_score)+'</button>':'<b class="tag">'+esc(g.away_score)+' – '+esc(g.home_score)+'</b>'):'';
     return '<div class="team"><span class="abbr">'+esc(awayAbbr)+'</span><span><span class="teamname">'+esc(awayName)+' @ '+esc(homeName)+'</span><span class="tag">'+esc(gameStatusLabel(g))+'</span>'+score+'</span><span class="abbr">'+esc(homeAbbr)+'</span></div>';
   }).join('')+'</div>';
 }
@@ -472,9 +565,9 @@ function applyNbaData(data,date){
   renderPostDraftHome(true);
   renderOwnerProfiles(true);
   const homeDate=homeScheduleDateValue();
-  if(dateKey(homeDate)===date)$('homeNbaScheduleContent').innerHTML=renderGameRows(data.games);
+  if(dateKey(homeDate)===date)$('homeNbaScheduleContent').innerHTML=renderGameRows(data.games,false,date);
   const myDate=scheduleDateValue();
-  if(dateKey(myDate)===date)$('myTeamScheduleContent').innerHTML=renderGameRows(data.games,true);
+  if(dateKey(myDate)===date)$('myTeamScheduleContent').innerHTML=renderGameRows(data.games,true,date);
   if(selectedTeamName&&dateKey(gameDateForTeam(selectedTeamName))===date)renderTeamScheduleDate();
   const status=$('nbaDataStatus');
   if(status)status.textContent='Updated '+new Date(data.updatedAt).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})+' · schedule and final scores';
