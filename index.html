@@ -103,8 +103,8 @@
       <h2 id="homeScheduleSelectedDate" class="schedule-selected-date"></h2>
       <button type="button" class="secondary date-arrow" id="homeScheduleNextDate" aria-label="Next date">›</button>
     </div>
-    <p class="muted small">The NBA games scheduled for this date will appear here when live NBA schedule data is connected.</p>
-    <div id="homeNbaScheduleContent" class="empty">Live NBA schedule data has not been connected yet.</div>
+    <p class="muted small">Schedules and final scores refresh automatically. This API plan does not provide live in-game scores.</p>
+    <div id="homeNbaScheduleContent" class="empty">Loading NBA schedule…</div>
   </div>
 </section>
 <section id="ownersPage" class="hidden">
@@ -275,8 +275,8 @@ const taken=new Map(state.picks.map(p=>[p.team,p]));$('poolLabel').textContent=`
 $('draftResults').innerHTML=state.picks.length?state.picks.map(p=>`<div class="pickrow"><span class="picknum">#${p.number}<br>R${p.round}</span><span><span class="pickteam">${esc(p.team)}</span><br><span class="pickowner">${esc(p.member)}</span></span><span class="abbr">${p.abbr}</span></div>`).join(''):'<div class="empty">No teams drafted yet.</div>';
 showLeaguePage(currentLeaguePage);}
 
-function renderPostDraftHome(){
-  renderHomeNbaScheduleDate();
+function renderPostDraftHome(skipSchedule=false){
+  if(!skipSchedule) renderHomeNbaScheduleDate();
   const records = state.records || {};
   const rows = state.members.map(m => {
     const owned = state.picks.filter(p => p.member === m.display_name);
@@ -306,7 +306,7 @@ function showLeaguePage(page){
   if (page === 'leagues' && currentLeaguePage !== 'leagues') loadMyLeagues('myLeaguesInLeagueList');
   document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('secondary',!active);b.setAttribute('aria-current',active?'page':'false');});
 }
-function renderOwnerProfiles(){
+function renderOwnerProfiles(skipSchedule=false){
   if (!state) return;
   const records=state.records||{};
   const owners=state.members.map(m=>{
@@ -328,7 +328,7 @@ function renderOwnerProfiles(){
   const ownerCards=$('homeOwnerProfiles');
   ownerCards.innerHTML=owners.map(o=>'<button type="button" class="team" data-owner-profile="'+esc(o.name)+'"><span class="abbr">'+(o.admin?'★':'GM')+'</span><span><span class="teamname">'+esc(o.name)+'</span><span class="tag">'+o.picks.length+' NBA teams · '+(o.points>0?'+':'')+o.points+' fantasy pts</span><span class="tag">View teams and records ↗</span></span></button>').join('')||'<div class="empty">League owners will appear here.</div>';
   ownerCards.querySelectorAll('[data-owner-profile]').forEach(button=>button.addEventListener('click',()=>renderHomeOwnerDetail(button.dataset.ownerProfile,owners)));
-  renderScheduleDate();
+  if(!skipSchedule) renderScheduleDate();
 }
 function scheduleDateValue(){
   if(!window.myScheduleDate){
@@ -336,12 +336,76 @@ function scheduleDateValue(){
   }
   return window.myScheduleDate;
 }
+const nbaDataCache=new Map();
+const nbaDataLoading=new Map();
+function dateKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function formatGameTime(value){
+  if(!value)return 'Time TBA';
+  const d=new Date(value);return Number.isNaN(d.getTime())?'Time TBA':d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit',timeZone:'America/New_York'})+' ET';
+}
+function gameStatusLabel(game){
+  const s=String(game.status||'scheduled').toLowerCase();
+  if(s==='final')return 'Final';
+  if(s==='in_progress')return 'In progress · final score updates after the game';
+  if(s==='postponed')return 'Postponed';
+  if(s==='canceled')return 'Canceled';
+  if(s==='delayed')return 'Delayed';
+  return formatGameTime(game.start_time);
+}
+function renderGameRows(games, onlyOwned=false){
+  const ownedAbbr=new Set((state?.picks||[]).filter(p=>p.member===state?.you?.display_name).map(p=>p.abbr));
+  const rows=(games||[]).filter(g=>!onlyOwned||ownedAbbr.has(g.home_team?.abbreviation)||ownedAbbr.has(g.away_team?.abbreviation));
+  if(!rows.length)return '<div class="empty">'+(onlyOwned?'No games involving your drafted teams on this date.':'No NBA games scheduled for this date.')+'</div>';
+  return '<div class="teamgrid">'+rows.map(g=>{
+    const away=g.away_team||{},home=g.home_team||{};
+    const hasScores=g.away_score!==null&&g.away_score!==undefined&&g.home_score!==null&&g.home_score!==undefined;
+    const score=hasScores?'<b class="tag">'+esc(g.away_score)+' – '+esc(g.home_score)+'</b>':'<span class="tag">'+esc(gameStatusLabel(g))+'</span>';
+    return '<div class="team"><span class="abbr">'+esc(away.abbreviation||'AWAY')+'</span><span><span class="teamname">'+esc(away.name||'Away team')+' @ '+esc(home.name||'Home team')+'</span><span class="tag">'+esc(gameStatusLabel(g))+'</span>'+score+'</span><span class="abbr">'+esc(home.abbreviation||'HOME')+'</span></div>';
+  }).join('')+'</div>';
+}
+function updateRecordsFromStandings(standings){
+  const records={};
+  (standings||[]).forEach(row=>{
+    const abbr=row.team?.abbreviation;
+    const localTeam=TEAMS.find(t=>t[1]===abbr);
+    if(localTeam)records[localTeam[0]]={w:Number(row.wins||0),l:Number(row.losses||0)};
+  });
+  if(state)state.records=records;
+}
+async function getNbaData(date){
+  const cached=nbaDataCache.get(date);
+  if(cached&&Date.now()-cached.savedAt<5*60*1000)return cached.data;
+  if(nbaDataLoading.has(date))return nbaDataLoading.get(date);
+  const request=(async()=>{
+    const response=await fetch(SUPABASE_URL+'/functions/v1/nba-data?date='+encodeURIComponent(date),{
+      headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||data.error)throw new Error(data.error||data.details||'Could not load NBA data.');
+    nbaDataCache.set(date,{data,savedAt:Date.now()});
+    return data;
+  })();
+  nbaDataLoading.set(date,request);
+  try{return await request;}finally{nbaDataLoading.delete(date);}
+}
+function applyNbaData(data,date){
+  updateRecordsFromStandings(data.standings);
+  renderPostDraftHome(true);
+  renderOwnerProfiles(true);
+  const homeDate=homeScheduleDateValue();
+  if(dateKey(homeDate)===date)$('homeNbaScheduleContent').innerHTML=renderGameRows(data.games);
+  const myDate=scheduleDateValue();
+  if(dateKey(myDate)===date)$('myTeamScheduleContent').innerHTML=renderGameRows(data.games,true);
+  const status=$('nbaDataStatus');
+  if(status)status.textContent='Updated '+new Date(data.updatedAt).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})+' · schedule and final scores';
+}
 function renderScheduleDate(){
-  const d=scheduleDateValue();
+  const d=scheduleDateValue(),date=dateKey(d);
   const label=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const node=$('scheduleSelectedDate');if(node)node.textContent=label;
   const content=$('myTeamScheduleContent');
-  if(content)content.textContent='Schedule information for '+label+' will appear here once live NBA schedule data is connected.';
+  if(content)content.innerHTML='<div class="empty">Loading NBA schedule…</div>';
+  getNbaData(date).then(data=>applyNbaData(data,date)).catch(e=>{if(content)content.innerHTML='<div class="empty">NBA data could not load: '+esc(e.message)+' Check that the Supabase nba-data function has been deployed.</div>';});
 }
 function changeScheduleDate(delta){
   const d=new Date(scheduleDateValue());d.setDate(d.getDate()+delta);d.setHours(12,0,0,0);window.myScheduleDate=d;renderScheduleDate();
@@ -355,11 +419,12 @@ function homeScheduleDateValue(){
   return window.homeNbaScheduleDate;
 }
 function renderHomeNbaScheduleDate(){
-  const d=homeScheduleDateValue();
+  const d=homeScheduleDateValue(),date=dateKey(d);
   const label=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   const node=$('homeScheduleSelectedDate');if(node)node.textContent=label;
   const content=$('homeNbaScheduleContent');
-  if(content)content.textContent='The NBA games scheduled for '+label+' will appear here once live NBA schedule data is connected.';
+  if(content)content.innerHTML='<div class="empty">Loading NBA schedule…</div>';
+  getNbaData(date).then(data=>applyNbaData(data,date)).catch(e=>{if(content)content.innerHTML='<div class="empty">NBA data could not load: '+esc(e.message)+' Check that the Supabase nba-data function has been deployed.</div>';});
 }
 function changeHomeNbaScheduleDate(delta){
   const d=new Date(homeScheduleDateValue());d.setDate(d.getDate()+delta);d.setHours(12,0,0,0);window.homeNbaScheduleDate=d;renderHomeNbaScheduleDate();
