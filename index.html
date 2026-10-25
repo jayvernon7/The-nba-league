@@ -5,7 +5,7 @@
 <meta name="theme-color" content="#0b1220"><title>The NBA League</title>
 <style>
 :root{--bg:#0b1220;--panel:#111c2e;--panel2:#17243a;--line:#26364e;--text:#f4f7fb;--muted:#9caec4;--blue:#78aaff;--blue2:#235ec7;--green:#45d6a0;--red:#ff7d8b;--gold:#f6c96b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#172a48 0,#0b1220 48%);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:11px 15px;background:var(--blue2);color:white;font-weight:700}button:disabled{opacity:.45;cursor:not-allowed}.secondary{background:#24334b}.danger{background:#783443}.wrap{max-width:1180px;margin:auto;padding:22px}.hero{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}.brand{display:flex;align-items:center;gap:13px}.ball{font-size:34px}.eyebrow{font-size:11px;letter-spacing:2px;color:var(--blue);font-weight:800}.brand h1{font-size:clamp(27px,5vw,42px);margin:0;line-height:1.1}.sub{color:var(--muted);margin:7px 0 0}.pill{border:1px solid var(--line);border-radius:999px;padding:7px 12px;color:var(--muted);font-size:12px}.panel{background:rgba(17,28,46,.94);border:1px solid var(--line);border-radius:16px;padding:19px;margin-bottom:16px;box-shadow:0 12px 30px #0002}.panel h2{margin:0 0 12px;font-size:19px}.muted{color:var(--muted)}.small{font-size:12px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}.field label{color:var(--muted);font-size:12px;font-weight:700}.field input,.field select{width:100%;background:#0b1423;color:var(--text);border:1px solid #33445e;border-radius:9px;padding:11px}.row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.row.between{justify-content:space-between}.notice{padding:12px 14px;background:#0d1b2c;border:1px solid var(--line);border-radius:10px;color:var(--muted);margin:10px 0}.invite{font-size:24px;letter-spacing:3px;font-weight:900;color:var(--gold);font-family:ui-monospace,monospace}.hidden{display:none!important}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:12px 0}.stat{background:#0b1423;border:1px solid var(--line);padding:12px;border-radius:12px}.stat b{display:block;font-size:22px}.stat span{color:var(--muted);font-size:11px}.memberlist{display:flex;gap:8px;flex-wrap:wrap}.member{background:#0b1423;border:1px solid var(--line);padding:8px 10px;border-radius:9px;font-size:13px}.member.current{border-color:var(--blue);color:var(--blue)}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.teamgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.team{display:flex;align-items:center;gap:9px;text-align:left;background:#0b1423;border:1px solid var(--line);padding:10px;border-radius:10px;color:var(--text);min-width:0}.team:not(:disabled):hover{border-color:var(--blue)}.team:disabled{opacity:.55}.abbr{width:36px;height:36px;display:grid;place-items:center;background:#20324c;color:var(--blue);font-size:11px;font-weight:900;border-radius:9px;flex-shrink:0}.teamname{font-size:12px;font-weight:750}.tag{display:block;color:var(--green);font-size:10px;margin-top:2px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.6px}.recordinput{width:55px;background:#0b1423;color:white;border:1px solid #33445e;padding:6px;border-radius:7px}.pickrow{display:grid;grid-template-columns:42px 1fr auto;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.picknum{color:var(--muted);font-size:12px}.pickteam{font-weight:750}.pickowner{font-size:12px;color:var(--muted)}.empty{padding:25px;text-align:center;color:var(--muted)}.status{min-height:22px;color:var(--gold);font-size:13px;margin-top:8px}.footer{text-align:center;color:#71839b;font-size:11px;padding:20px}.topstatus{display:flex;gap:8px;flex-wrap:wrap;align-items:center}@media(max-width:760px){.grid{grid-template-columns:1fr}.teamgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.wrap{padding:13px}.panel{padding:14px}}@media(max-width:420px){.teamgrid{grid-template-columns:1fr}.invite{font-size:20px}}
-</style>
+.schedule-date-row{display:grid;grid-template-columns:48px minmax(0,1fr) 48px;align-items:center;gap:12px;margin:12px 0 18px}.schedule-selected-date{text-align:center;margin:0;font-size:clamp(17px,2.5vw,23px)}.date-arrow{min-height:44px;font-size:30px;line-height:1;padding:6px}.schedule-date-row .date-arrow:last-child{justify-self:end}.schedule-date-row .date-arrow:first-child{justify-self:start}</style>
 </head>
 <body><main class="wrap">
 <header class="hero"><div class="brand"><div class="ball">🏀</div><div><div class="eyebrow">YOUR FRONT OFFICE STARTS HERE</div><h1>The NBA League</h1><p class="sub">One league. 30 NBA teams. Your general manager era.</p></div></div><div class="topstatus"><span class="pill" id="connection">Connecting…</span><button type="button" class="secondary hidden" id="topMyLeaguesBtn">My Leagues</button><button class="danger hidden" id="logoutBtn">Log Out</button></div></header>
@@ -97,7 +97,17 @@
   <div class="panel"><div class="eyebrow">OWNER PROFILES</div><h2>General Managers</h2><p class="muted">Choose an owner to see their drafted NBA teams, records, and schedules.</p><div id="homeOwnerProfiles" class="teamgrid"></div><div id="homeOwnerProfileDetail" class="panel hidden"></div></div>
 </section>
 <section id="ownersPage" class="hidden">
-  <div class="panel"><div class="eyebrow">MY PROFILE</div><h2 id="myProfileHeading">My NBA Teams</h2><p class="muted">Your drafted NBA teams, records, fantasy points, and team schedules.</p><div id="myProfileDetail"></div></div>
+  <div class="panel"><div class="eyebrow">MY PROFILE</div><h2 id="myProfileHeading">My Profile</h2><p class="muted">Your league ranking and the NBA teams you own.</p><div id="myProfileDetail"></div></div>
+  <div class="panel" id="myTeamSchedulePanel">
+    <div class="eyebrow">TEAM SCHEDULE</div>
+    <div class="row between schedule-date-row">
+      <button type="button" class="secondary date-arrow" id="schedulePrevDate" aria-label="Previous date">‹</button>
+      <h2 id="scheduleSelectedDate" class="schedule-selected-date"></h2>
+      <button type="button" class="secondary date-arrow" id="scheduleNextDate" aria-label="Next date">›</button>
+    </div>
+    <p class="muted small">Your teams’ games for the selected date will appear here when live NBA schedule data is connected.</p>
+    <div id="myTeamScheduleContent" class="empty">Schedule information will appear here.</div>
+  </div>
 </section>
 <section id="myLeaguesLeaguePage" class="hidden"><div class="panel"><div class="eyebrow">MY LEAGUES</div><h2>Your Leagues</h2><p class="muted">Choose a league connected to your account.</p><div id="myLeaguesInLeagueList"></div></div></section>
 </section><div class="footer">The NBA League · Shared league state powered by Supabase · Keep your device membership private.</div></main>
@@ -287,11 +297,42 @@ function showLeaguePage(page){
 function renderOwnerProfiles(){
   if (!state) return;
   const records=state.records||{};
-  const owners=state.members.map(m=>{const picks=state.picks.filter(p=>p.member===m.display_name);let wins=0,losses=0;picks.forEach(p=>{wins+=Number(records[p.team]?.w||0);losses+=Number(records[p.team]?.l||0);});return {name:m.display_name,picks,wins,losses,points:wins-losses,admin:m.is_admin};});
-  owners.sort((a,b)=>b.points-a.points||b.wins-a.wins||a.name.localeCompare(b.name));
-  $('homeOwnerProfiles').innerHTML=owners.map((o,i)=>'<button type="button" class="team" data-home-owner="'+esc(o.name)+'"><span class="abbr">'+(i+1)+'</span><span><span class="teamname">'+esc(o.name)+(o.admin?' ★':'')+'</span><span class="tag">'+o.picks.length+' teams · '+(o.points>0?'+':'')+o.points+' fantasy points</span></span></button>').join('')||'<div class="empty">No owners yet.</div>';
-  document.querySelectorAll('[data-home-owner]').forEach(b=>b.addEventListener('click',()=>renderHomeOwnerDetail(b.dataset.homeOwner,owners)));
+  const owners=state.members.map(m=>{
+    const picks=state.picks.filter(p=>p.member===m.display_name);
+    let wins=0,losses=0;
+    picks.forEach(p=>{wins+=Number(records[p.team]?.w||0);losses+=Number(records[p.team]?.l||0);});
+    return {name:m.display_name,picks,wins,losses,points:wins-losses,admin:m.is_admin};
+  }).sort((a,b)=>b.points-a.points||b.wins-a.wins||a.name.localeCompare(b.name));
+  const ownerName=state.you?.display_name || session?.name || '';
+  const me=owners.find(o=>o.name===ownerName);
+  const rank=me ? owners.findIndex(o=>o.name===ownerName)+1 : '—';
+  const slugs={ATL:'hawks',BOS:'celtics',BKN:'nets',CHA:'hornets',CHI:'bulls',CLE:'cavaliers',DAL:'mavericks',DEN:'nuggets',DET:'pistons',GSW:'warriors',HOU:'rockets',IND:'pacers',LAC:'clippers',LAL:'lakers',MEM:'grizzlies',MIA:'heat',MIL:'bucks',MIN:'timberwolves',NOP:'pelicans',NYK:'knicks',OKC:'thunder',ORL:'magic',PHI:'76ers',PHX:'suns',POR:'trail-blazers',SAC:'kings',SAS:'spurs',TOR:'raptors',UTA:'jazz',WAS:'wizards'};
+  const cards=(me?.picks||[]).map(p=>{
+    const w=Number(records[p.team]?.w||0),l=Number(records[p.team]?.l||0);
+    return '<div class="team"><span class="abbr">'+esc(p.abbr)+'</span><span><span class="teamname">'+esc(p.team)+'</span><span class="tag">'+w+' W · '+l+' L · '+(w-l>0?'+':'')+(w-l)+' fantasy pts</span><span class="tag"><a target="_blank" rel="noopener noreferrer" href="https://www.nba.com/'+(slugs[p.abbr]||'')+'/schedule">View team schedule ↗</a></span></span></div>';
+  }).join('')||'<div class="empty">No teams drafted yet. Your teams will appear here after you draft or are assigned NBA teams.</div>';
+  $('myProfileHeading').textContent=ownerName ? ownerName+"'s Profile" : 'My Profile';
+  $('myProfileDetail').innerHTML='<div class="stats"><div class="stat"><b>#'+rank+'</b><span>LEAGUE RANK</span></div><div class="stat"><b>'+ (me?.picks.length||0)+'</b><span>NBA TEAMS</span></div><div class="stat"><b>'+(me?.wins||0)+'</b><span>TEAM WINS</span></div><div class="stat"><b>'+(me?.losses||0)+'</b><span>TEAM LOSSES</span></div><div class="stat"><div><b>'+((me?.points||0)>0?'+':'')+(me?.points||0)+'</b></div><span>FANTASY POINTS</span></div></div><div class="eyebrow" style="margin:18px 0 10px">MY NBA TEAMS</div><div class="teamgrid">'+cards+'</div>';
+  renderScheduleDate();
 }
+function scheduleDateValue(){
+  if(!window.myScheduleDate){
+    const d=new Date();d.setHours(12,0,0,0);window.myScheduleDate=d;
+  }
+  return window.myScheduleDate;
+}
+function renderScheduleDate(){
+  const d=scheduleDateValue();
+  const label=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const node=$('scheduleSelectedDate');if(node)node.textContent=label;
+  const content=$('myTeamScheduleContent');
+  if(content)content.textContent='Schedule information for '+label+' will appear here once live NBA schedule data is connected.';
+}
+function changeScheduleDate(delta){
+  const d=new Date(scheduleDateValue());d.setDate(d.getDate()+delta);d.setHours(12,0,0,0);window.myScheduleDate=d;renderScheduleDate();
+}
+$('schedulePrevDate').addEventListener('click',()=>changeScheduleDate(-1));
+$('scheduleNextDate').addEventListener('click',()=>changeScheduleDate(1));
 function renderHomeOwnerDetail(name,owners){
   const o=owners.find(x=>x.name===name);if(!o)return;const records=state.records||{};
   const slugs={ATL:'hawks',BOS:'celtics',BKN:'nets',CHA:'hornets',CHI:'bulls',CLE:'cavaliers',DAL:'mavericks',DEN:'nuggets',DET:'pistons',GSW:'warriors',HOU:'rockets',IND:'pacers',LAC:'clippers',LAL:'lakers',MEM:'grizzlies',MIA:'heat',MIL:'bucks',MIN:'timberwolves',NOP:'pelicans',NYK:'knicks',OKC:'thunder',ORL:'magic',PHI:'76ers',PHX:'suns',POR:'trail-blazers',SAC:'kings',SAS:'spurs',TOR:'raptors',UTA:'jazz',WAS:'wizards'};
