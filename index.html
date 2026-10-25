@@ -324,7 +324,6 @@ $('saveRecordsBtn').addEventListener('click',async()=>{if(!state?.you.is_admin)r
 showApp();if(session){refresh();}else{$('connection').textContent='Ready to create or join';}setInterval(()=>{if(session)refresh();},3000);
 // NBA LEAGUE ACCOUNT SYSTEM
 const ACCOUNT_URL = `${SUPABASE_URL}/functions/v1/nba-account-manager`;
-let accountSession = JSON.parse(localStorage.getItem('nbaAccountSession') || 'null');
 
 async function accountRequest(payload) {
   const headers = {
