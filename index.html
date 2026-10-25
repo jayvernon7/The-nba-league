@@ -72,9 +72,36 @@
 <div id="inviteArea" class="notice hidden"><div class="small">COMMISSIONER INVITE CODE — share this with your GMs</div><div class="row between"><span class="invite" id="inviteCodeDisplay"></span><button id="copyInviteBtn2">Copy Code</button></div></div>
 <div class="stats"><div class="stat"><b id="memberCount">1/6</b><span>GENERAL MANAGERS</span></div><div class="stat"><b id="pickCount">0/30</b><span>TEAMS DRAFTED</span></div><div class="stat"><b id="roundCount">Round 1</b><span>DRAFT ROUND</span></div><div class="stat"><b id="turnCount">—</b><span>ON THE CLOCK</span></div></div>
 <h2>General Managers</h2><div id="members" class="memberlist"></div><div id="commissionerTools" class="row" style="margin-top:15px"><button id="randomizeBtn" class="secondary">Randomize Draft Order</button><button id="startBtn">Start Draft</button><button id="undoBtn" class="secondary">Undo Last Pick</button><button id="resetBtn" class="danger">Reset League Draft</button></div><div id="leagueStatus" class="status"></div></div>
-<div class="grid"><div class="panel"><div class="sectionhead"><h2>NBA Team Pool</h2><span class="pill" id="poolLabel">30 available</span></div><p class="muted small" id="pickHint">The commissioner can start the draft when everyone has joined.</p><div id="teamGrid" class="teamgrid"></div></div>
+<div id="draftWorkspace"><div class="grid"><div class="panel"><div class="sectionhead"><h2>NBA Team Pool</h2><span class="pill" id="poolLabel">30 available</span></div><p class="muted small" id="pickHint">The commissioner can start the draft when everyone has joined.</p><div id="teamGrid" class="teamgrid"></div></div>
 <div class="panel"><div class="sectionhead"><h2>Draft Results</h2><span class="pill">Snake draft</span></div><div id="draftResults"><div class="empty">No teams drafted yet.</div></div></div></div>
 <div class="panel"><div class="sectionhead"><div><h2>Team Records & Standings</h2><p class="muted small">Commissioner can enter each NBA team's wins and losses. Standings sort by win percentage.</p></div><div class="row"><button id="saveRecordsBtn">Save Records</button><button id="clearRecordsBtn" class="secondary">Clear Records</button></div></div><div class="tablewrap"><table><thead><tr><th>NBA Team</th><th>GM</th><th>W</th><th>L</th><th>Win %</th></tr></thead><tbody id="standingsBody"></tbody></table></div></div>
+<section id="postDraftHome" class="hidden">
+  <div class="panel">
+    <div class="eyebrow">LEAGUE HOME</div>
+    <h2>Draft complete — welcome to your league</h2>
+    <p class="muted">All 30 NBA teams have been drafted. Fantasy points are each GM's teams' wins minus losses.</p>
+    <div class="stats">
+      <div class="stat"><b id="homeTeamCount">30</b><span>TEAMS DRAFTED</span></div>
+      <div class="stat"><b id="homeMemberCount">—</b><span>GENERAL MANAGERS</span></div>
+      <div class="stat"><b id="homeRecordCount">0</b><span>TEAMS WITH RECORDS</span></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Fantasy Standings</h2>
+    <p class="muted small">Points = wins − losses. Ties break by combined team wins.</p>
+    <div class="tablewrap"><table><thead><tr><th>Rank</th><th>General Manager</th><th>Teams</th><th>Wins</th><th>Losses</th><th>Points</th></tr></thead><tbody id="fantasyStandingsBody"></tbody></table></div>
+  </div>
+  <div class="panel">
+    <h2>Team Ownership</h2>
+    <p class="muted small">Every drafted NBA team and its general manager.</p>
+    <div id="teamOwnershipGrid" class="teamgrid"></div>
+  </div>
+  <div class="panel">
+    <h2>Update NBA team records</h2>
+    <p class="muted">Commissioners can enter wins and losses in Team Records & Standings below. Records are currently entered manually; live NBA stats are not connected yet.</p>
+    <button type="button" id="backToDraftBtn" class="secondary">View Draft & Team Records</button>
+  </div>
+</section>
 </section><div class="footer">The NBA League · Shared league state powered by Supabase · Keep your device membership private.</div></main>
 <script>
 const SUPABASE_URL='https://pwpmehyuyaxudfkxbtjh.supabase.co';
@@ -219,12 +246,39 @@ async function act(fn, args = {}, success = 'Updated.') {
   }
 }
 function currentTurn(){if(!state||!state.started||state.picks.length>=30)return null;const m=state.members.length,n=state.picks.length,r=Math.floor(n/m)+1,slot=n%m;const idx=r%2===1?slot:m-slot-1;return state.members[idx]||null;}
-function render(){if(!state)return; $('leagueTitle').textContent=state.league_name;$('youLabel').textContent=`Signed in as ${state.you.display_name}${state.you.is_admin?' · Commissioner':''}`;$('inviteArea').classList.toggle('hidden',!inviteCode);$('inviteCodeDisplay').textContent=inviteCode;$('memberCount').textContent=`${state.members.length}/${state.member_limit}`;$('pickCount').textContent=`${state.picks.length}/30`;const round=state.picks.length>=30?'Complete':`Round ${Math.floor(state.picks.length/Math.max(1,state.members.length))+1}`;$('roundCount').textContent=round;const turn=currentTurn();$('turnCount').textContent=turn?turn.display_name:'—';$('members').innerHTML=state.members.map((m,i)=>`<span class="member ${m.id===state.you.member_id?'current':''}">${i+1}. ${esc(m.display_name)}${m.is_admin?' ★':''}${m.id===state.you.member_id?' (you)':''}</span>`).join('');$('commissionerTools').classList.toggle('hidden',!state.you.is_admin);$('startBtn').disabled=state.started||state.members.length<2;$('randomizeBtn').disabled=state.started||state.members.length<2;$('undoBtn').disabled=!state.picks.length;$('resetBtn').disabled=!state.picks.length&&!state.started;
+function render(){if(!state)return;
+const draftComplete = state.picks.length >= 30;
+$('draftWorkspace').classList.toggle('hidden', draftComplete);
+$('postDraftHome').classList.toggle('hidden', !draftComplete);
+if (draftComplete) renderPostDraftHome();
+$('leagueTitle').textContent=state.league_name;$('youLabel').textContent=`Signed in as ${state.you.display_name}${state.you.is_admin?' · Commissioner':''}`;$('inviteArea').classList.toggle('hidden',!inviteCode);$('inviteCodeDisplay').textContent=inviteCode;$('memberCount').textContent=`${state.members.length}/${state.member_limit}`;$('pickCount').textContent=`${state.picks.length}/30`;const round=state.picks.length>=30?'Complete':`Round ${Math.floor(state.picks.length/Math.max(1,state.members.length))+1}`;$('roundCount').textContent=round;const turn=currentTurn();$('turnCount').textContent=turn?turn.display_name:'—';$('members').innerHTML=state.members.map((m,i)=>`<span class="member ${m.id===state.you.member_id?'current':''}">${i+1}. ${esc(m.display_name)}${m.is_admin?' ★':''}${m.id===state.you.member_id?' (you)':''}</span>`).join('');$('commissionerTools').classList.toggle('hidden',!state.you.is_admin);$('startBtn').disabled=state.started||state.members.length<2;$('randomizeBtn').disabled=state.started||state.members.length<2;$('undoBtn').disabled=!state.picks.length;$('resetBtn').disabled=!state.picks.length&&!state.started;
 $('pickHint').textContent=!state.started?'The commissioner can start the draft when everyone has joined.':state.picks.length>=30?'All 30 NBA teams have been drafted.':turn?.id===state.you.member_id?'It is your turn — select an available NBA team.':`Waiting for ${turn?.display_name||'the next GM'} to pick.`;
 const taken=new Map(state.picks.map(p=>[p.team,p]));$('poolLabel').textContent=`${30-taken.size} available`;$('teamGrid').innerHTML=TEAMS.map(([name,abbr])=>{const p=taken.get(name),isTurn=turn?.id===state.you.member_id;return `<button class="team" ${p||!state.started||!isTurn?'disabled':''} data-team="${name}"><span class="abbr">${abbr}</span><span><span class="teamname">${name}</span>${p?`<span class="tag">Drafted by ${esc(p.member)}</span>`:state.started&&isTurn?'<span class="tag">Tap to draft</span>':''}</span></button>`}).join('');document.querySelectorAll('[data-team]').forEach(b=>b.addEventListener('click',()=>act('nba_make_pick',{p_team_name:b.dataset.team,},`Drafted ${b.dataset.team}.`)));
 $('draftResults').innerHTML=state.picks.length?state.picks.map(p=>`<div class="pickrow"><span class="picknum">#${p.number}<br>R${p.round}</span><span><span class="pickteam">${esc(p.team)}</span><br><span class="pickowner">${esc(p.member)}</span></span><span class="abbr">${p.abbr}</span></div>`).join(''):'<div class="empty">No teams drafted yet.</div>';
 const owners={};state.picks.forEach(p=>owners[p.team]=p.member);const records=state.records||{};const sorted=TEAMS.map(([name,abbr])=>({name,abbr,owner:owners[name]||'—',w:Number(records[name]?.w||0),l:Number(records[name]?.l||0)})).sort((a,b)=>{const ap=a.w+a.l? a.w/(a.w+a.l):-1,bp=b.w+b.l?b.w/(b.w+b.l):-1;return bp-ap||b.w-a.w||a.name.localeCompare(b.name)});$('standingsBody').innerHTML=sorted.map(t=>`<tr><td><b>${t.abbr}</b> ${t.name}</td><td>${esc(t.owner)}</td><td><input class="recordinput" type="number" min="0" max="82" value="${t.w}" data-win="${t.name}" ${state.you.is_admin?'':'disabled'}></td><td><input class="recordinput" type="number" min="0" max="82" value="${t.l}" data-loss="${t.name}" ${state.you.is_admin?'':'disabled'}></td><td>${t.w+t.l?(100*t.w/(t.w+t.l)).toFixed(1)+'%':'—'}</td></tr>`).join('');$('saveRecordsBtn').classList.toggle('hidden',!state.you.is_admin);$('clearRecordsBtn').classList.toggle('hidden',!state.you.is_admin);}
+
+function renderPostDraftHome(){
+  const records = state.records || {};
+  const ownerByTeam = {};
+  state.picks.forEach(p => { ownerByTeam[p.team] = p.member; });
+  const rows = state.members.map(m => {
+    const owned = state.picks.filter(p => p.member === m.display_name);
+    let wins = 0, losses = 0;
+    owned.forEach(p => {
+      wins += Number(records[p.team]?.w || 0);
+      losses += Number(records[p.team]?.l || 0);
+    });
+    return {name:m.display_name, teams:owned.length, wins, losses, points:wins-losses};
+  }).sort((a,b) => b.points-a.points || b.wins-a.wins || a.name.localeCompare(b.name));
+  $('homeTeamCount').textContent = state.picks.length;
+  $('homeMemberCount').textContent = state.members.length;
+  $('homeRecordCount').textContent = TEAMS.filter(([name]) => records[name] && Number(records[name].w||0)+Number(records[name].l||0)>0).length;
+  $('fantasyStandingsBody').innerHTML = rows.map((m,i) => `<tr><td>${i+1}</td><td><b>${esc(m.name)}</b></td><td>${m.teams}</td><td>${m.wins}</td><td>${m.losses}</td><td><b>${m.points>0?'+':''}${m.points}</b></td></tr>`).join('');
+  $('teamOwnershipGrid').innerHTML = TEAMS.map(([name,abbr]) => `<div class="team"><span class="abbr">${abbr}</span><span><span class="teamname">${name}</span><span class="tag">GM: ${esc(ownerByTeam[name] || '—')}</span></span></div>`).join('');
+}
+
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+$('backToDraftBtn').addEventListener('click',()=>{$('draftWorkspace').classList.remove('hidden');$('postDraftHome').classList.add('hidden');});
 $('createForm').addEventListener('submit',createLeague);$('joinForm').addEventListener('submit',joinLeague);$('refreshBtn').addEventListener('click',refresh);$('copyInviteBtn').addEventListener('click',copyCode);$('copyInviteBtn2').addEventListener('click',copyCode);$('startBtn').addEventListener('click',()=>act('nba_start_draft',{},'Draft started.'));$('randomizeBtn').addEventListener('click',()=>act('nba_randomize_draft_order',{},'Draft order randomized.'));$('undoBtn').addEventListener('click',()=>{if(confirm('Undo the most recent pick?'))act('nba_undo_last_pick',{},'Last pick undone.');});$('resetBtn').addEventListener('click',()=>{if(confirm('Reset the entire draft? All 30 team picks will be cleared.'))act('nba_reset_league',{},'Draft reset.');});$('leaveBtn').addEventListener('click',()=>{if(confirm('Remove this league from this device? This does not delete the shared league.')){localStorage.removeItem('nbaLeagueSession');session=null;state=null;inviteCode='';showApp();$('connection').textContent='Ready';}});
 $('saveRecordsBtn').addEventListener('click',async()=>{if(!state?.you.is_admin)return;const inputs=[...document.querySelectorAll('[data-win]')];for(const input of inputs){const name=input.dataset.win,w=Number(input.value),l=Number(document.querySelector(`[data-loss="${CSS.escape(name)}"]`).value);if(!Number.isInteger(w)||!Number.isInteger(l)||w<0||l<0||w>82||l>82){setStatus('leagueStatus','Wins and losses must be whole numbers from 0 to 82.');return;}}setStatus('leagueStatus','Saving records…');try{for(const input of inputs){const name=input.dataset.win,w=Number(input.value),l=Number(document.querySelector(`[data-loss="${CSS.escape(name)}"]`).value);await rpc('nba_set_team_record',{p_league_id:session.leagueId,p_member_token:session.token,p_team_name:name,p_wins:w,p_losses:l});}await refresh();setStatus('leagueStatus','All team records saved.');}catch(e){setStatus('leagueStatus',errText(e));}});$('clearRecordsBtn').addEventListener('click',()=>{if(confirm('Clear all team records?'))act('nba_clear_records',{},'Team records cleared.');});
 showApp();if(session){refresh();}else{$('connection').textContent='Ready to create or join';}setInterval(()=>{if(session)refresh();},3000);
