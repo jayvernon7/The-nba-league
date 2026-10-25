@@ -120,7 +120,7 @@
 const SUPABASE_URL='https://pwpmehyuyaxudfkxbtjh.supabase.co';
 const SUPABASE_KEY='sb_publishable_DeYrI1Q0e8SZL9EOnqaqOw_fkFMwdtw';
 const TEAMS=[['Atlanta Hawks','ATL'],['Boston Celtics','BOS'],['Brooklyn Nets','BKN'],['Charlotte Hornets','CHA'],['Chicago Bulls','CHI'],['Cleveland Cavaliers','CLE'],['Dallas Mavericks','DAL'],['Denver Nuggets','DEN'],['Detroit Pistons','DET'],['Golden State Warriors','GSW'],['Houston Rockets','HOU'],['Indiana Pacers','IND'],['LA Clippers','LAC'],['Los Angeles Lakers','LAL'],['Memphis Grizzlies','MEM'],['Miami Heat','MIA'],['Milwaukee Bucks','MIL'],['Minnesota Timberwolves','MIN'],['New Orleans Pelicans','NOP'],['New York Knicks','NYK'],['Oklahoma City Thunder','OKC'],['Orlando Magic','ORL'],['Philadelphia 76ers','PHI'],['Phoenix Suns','PHX'],['Portland Trail Blazers','POR'],['Sacramento Kings','SAC'],['San Antonio Spurs','SAS'],['Toronto Raptors','TOR'],['Utah Jazz','UTA'],['Washington Wizards','WAS']];
-const $=id=>document.getElementById(id);let session=JSON.parse(localStorage.getItem('nbaLeagueSession')||'null'),state=null,inviteCode=session?.inviteCode||'',polling=false;
+const $=id=>document.getElementById(id);let session=JSON.parse(localStorage.getItem('nbaLeagueSession')||'null'),accountSession=JSON.parse(localStorage.getItem('nbaAccountSession')||'null'),state=null,inviteCode=session?.inviteCode||'',polling=false;
 function saveSession(){localStorage.setItem('nbaLeagueSession',JSON.stringify(session));}
 async function rpc(name,args){
   const accountSession = JSON.parse(localStorage.getItem('nbaAccountSession') || 'null');
@@ -470,7 +470,7 @@ async function loadMyLeagues() {
             isAdmin: result.you.is_admin,
             accountBased: true
           };
-
+          saveSession();
           showApp();
           render();
         } catch (error) {
@@ -576,5 +576,8 @@ $('logoutBtn').addEventListener('click', () => {
   setStatus('accountLoginStatus', 'You have been logged out.');
 });
 
-// Start on the account screen unless an account is already saved.
+// Restore the saved account and league on page load. Only the Log Out button clears the account session.
+showAccountScreen();
+if (!session) $('connection').textContent = accountSession ? 'Ready to open a league' : 'Ready to sign in';
+setInterval(()=>{if(session) refresh();},3000);
 </script></body></html>
