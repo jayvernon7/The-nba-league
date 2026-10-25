@@ -289,7 +289,10 @@ $('leagueTitle').textContent=state.league_name;$('youLabel').textContent=`Signed
 $('pickHint').textContent=!state.started?'The commissioner can start the draft when everyone has joined.':state.picks.length>=30?'All 30 NBA teams have been drafted.':turn?.id===state.you.member_id?'It is your turn — select an available NBA team.':`Waiting for ${turn?.display_name||'the next GM'} to pick.`;
 const taken=new Map(state.picks.map(p=>[p.team,p]));$('poolLabel').textContent=`${30-taken.size} available`;$('teamGrid').innerHTML=TEAMS.map(([name,abbr])=>{const p=taken.get(name),isTurn=turn?.id===state.you.member_id;return `<button class="team" ${p||!state.started||!isTurn?'disabled':''} data-team="${name}"><span class="abbr">${abbr}</span><span><span class="teamname">${name}</span>${p?`<span class="tag">Drafted by ${esc(p.member)}</span>`:state.started&&isTurn?'<span class="tag">Tap to draft</span>':''}</span></button>`}).join('');document.querySelectorAll('[data-team]').forEach(b=>b.addEventListener('click',()=>act('nba_make_pick',{p_team_name:b.dataset.team,},`Drafted ${b.dataset.team}.`)));
 $('draftResults').innerHTML=state.picks.length?state.picks.map(p=>`<div class="pickrow"><span class="picknum">#${p.number}<br>R${p.round}</span><span><span class="pickteam">${esc(p.team)}</span><br><span class="pickowner">${esc(p.member)}</span></span><span class="abbr">${p.abbr}</span></div>`).join(''):'<div class="empty">No teams drafted yet.</div>';
-showLeaguePage(currentLeaguePage);}
+if(selectedTeamName && !$('teamDetailPage').classList.contains('hidden')){
+  $('leagueDashboardPanel').classList.add('hidden');
+  $('postDraftHome').classList.add('hidden');$('draftWorkspace').classList.add('hidden');$('ownersPage').classList.add('hidden');$('myLeaguesLeaguePage').classList.add('hidden');
+} else { showLeaguePage(currentLeaguePage); }}
 
 function renderPostDraftHome(skipSchedule=false){
   if(!skipSchedule) renderHomeNbaScheduleDate();
@@ -367,7 +370,7 @@ function gameDateForTeam(teamName){
 let selectedTeamName='',selectedTeamOwner='',teamPageReturn='home';
 function openTeamPage(teamName,ownerName=''){
   selectedTeamName=teamName;selectedTeamOwner=ownerName;teamPageReturn=currentLeaguePage==='myprofile'?'myprofile':'home';
-  $('leagueDashboardPanel').classList.remove('hidden');
+  $('leagueDashboardPanel').classList.add('hidden');
   $('postDraftHome').classList.add('hidden');$('draftWorkspace').classList.add('hidden');$('ownersPage').classList.add('hidden');$('myLeaguesLeaguePage').classList.add('hidden');
   $('teamDetailPage').classList.remove('hidden');
   document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===teamPageReturn;b.classList.toggle('secondary',!active);b.setAttribute('aria-current',active?'page':'false');});
