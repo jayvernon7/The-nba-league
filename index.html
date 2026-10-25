@@ -103,12 +103,12 @@
       <h2 id="homeScheduleSelectedDate" class="schedule-selected-date"></h2>
       <button type="button" class="secondary date-arrow" id="homeScheduleNextDate" aria-label="Next date">›</button>
     </div>
-    <p class="muted small">Schedules and final scores refresh automatically. This API plan does not provide live in-game scores.</p>
+    <p class="muted small">Game times are shown in Eastern Time (ET). Schedules and final scores refresh automatically. This API plan does not provide live in-game scores.</p>
     <div id="homeNbaScheduleContent" class="empty">Loading NBA schedule…</div>
   </div>
 </section>
 <section id="ownersPage" class="hidden">
-  <div class="panel"><div class="eyebrow">MY PROFILE</div><h2 id="myProfileHeading">My Profile</h2><p class="muted">Your league ranking and the NBA teams you own.</p><div id="myProfileDetail"></div></div>
+  <div class="panel"><div class="eyebrow">MY PROFILE</div><h2 id="myProfileHeading">My Profile</h2><p class="muted">Your league ranking and the NBA teams you own. Select a team to open its page.</p><div id="myProfileDetail"></div></div>
   <div class="panel" id="myTeamSchedulePanel">
     <div class="eyebrow">TEAM SCHEDULE</div>
     <div class="row between schedule-date-row">
@@ -116,8 +116,24 @@
       <h2 id="scheduleSelectedDate" class="schedule-selected-date"></h2>
       <button type="button" class="secondary date-arrow" id="scheduleNextDate" aria-label="Next date">›</button>
     </div>
-    <p class="muted small">Your teams’ games for the selected date will appear here when live NBA schedule data is connected.</p>
+    <p class="muted small">Game times are shown in Eastern Time (ET). Select a team above to view its full team page.</p>
     <div id="myTeamScheduleContent" class="empty">Schedule information will appear here.</div>
+  </div>
+</section>
+<section id="teamDetailPage" class="hidden">
+  <div class="panel">
+    <div class="row between"><div><div class="eyebrow">NBA TEAM PAGE</div><h2 id="teamPageName">Team</h2><p id="teamPageOwner" class="muted small"></p></div><button type="button" class="secondary" id="teamPageBack">Back</button></div>
+    <div id="teamPageSummary"></div>
+  </div>
+  <div class="panel">
+    <div class="eyebrow">TEAM SCHEDULE</div>
+    <div class="row between schedule-date-row">
+      <button type="button" class="secondary date-arrow" id="teamSchedulePrevDate" aria-label="Previous date">‹</button>
+      <h2 id="teamScheduleSelectedDate" class="schedule-selected-date"></h2>
+      <button type="button" class="secondary date-arrow" id="teamScheduleNextDate" aria-label="Next date">›</button>
+    </div>
+    <p class="muted small">Game times are shown in Eastern Time (ET).</p>
+    <div id="teamScheduleContent" class="empty">Loading team schedule…</div>
   </div>
 </section>
 <section id="myLeaguesLeaguePage" class="hidden"><div class="panel"><div class="eyebrow">MY LEAGUES</div><h2>Your Leagues</h2><p class="muted">Choose a league connected to your account.</p><div id="myLeaguesInLeagueList"></div></div></section>
@@ -302,6 +318,7 @@ function showLeaguePage(page){
   $('postDraftHome').classList.toggle('hidden', page !== 'home');
   $('draftWorkspace').classList.toggle('hidden', page !== 'draft');
   $('ownersPage').classList.toggle('hidden', page !== 'myprofile');
+  $('teamDetailPage').classList.add('hidden');
   $('myLeaguesLeaguePage').classList.toggle('hidden', page !== 'leagues');
   if (page === 'leagues' && currentLeaguePage !== 'leagues') loadMyLeagues('myLeaguesInLeagueList');
   document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('secondary',!active);b.setAttribute('aria-current',active?'page':'false');});
@@ -320,13 +337,14 @@ function renderOwnerProfiles(skipSchedule=false){
   const rank=me ? owners.findIndex(o=>o.name===ownerName)+1 : '—';
   const cards=(me?.picks||[]).map(p=>{
     const w=Number(records[p.team]?.w||0),l=Number(records[p.team]?.l||0);
-    return '<div class="team"><span><span class="teamname">'+esc(p.team)+'</span><span class="tag">'+w+' W - '+l+' L · '+(w-l>0?'+':'')+(w-l)+' fantasy pts</span></span></div>';
+    return '<button type="button" class="team" data-team-page="'+esc(p.team)+'"><span><span class="teamname">'+esc(p.team)+'</span><span class="tag">'+w+' W - '+l+' L · '+(w-l>0?'+':'')+(w-l)+' fantasy pts</span></span></button>';
   }).join('')||'<div class="empty">No teams drafted yet. Your teams will appear here after you draft or are assigned NBA teams.</div>';
   $('myProfileHeading').textContent=ownerName ? ownerName+"'s Profile" : 'My Profile';
   $('myProfileDetail').innerHTML='<div class="stats"><div class="stat"><b>#'+rank+'</b><span>LEAGUE RANK</span></div><div class="stat"><b>'+ (me?.picks.length||0)+'</b><span>NBA TEAMS</span></div><div class="stat"><b>'+(me?.wins||0)+'</b><span>TEAM WINS</span></div><div class="stat"><b>'+(me?.losses||0)+'</b><span>TEAM LOSSES</span></div><div class="stat"><div><b>'+((me?.points||0)>0?'+':'')+(me?.points||0)+'</b></div><span>FANTASY POINTS</span></div></div><div class="eyebrow" style="margin:18px 0 10px">MY NBA TEAMS</div><div class="teamgrid">'+cards+'</div>';
   const ownerCards=$('homeOwnerProfiles');
   ownerCards.innerHTML=owners.map(o=>'<button type="button" class="team" data-owner-profile="'+esc(o.name)+'"><span class="abbr">'+(o.admin?'★':'GM')+'</span><span><span class="teamname">'+esc(o.name)+'</span><span class="tag">'+o.picks.length+' NBA teams · '+(o.points>0?'+':'')+o.points+' fantasy pts</span><span class="tag">View teams and records ↗</span></span></button>').join('')||'<div class="empty">League owners will appear here.</div>';
   ownerCards.querySelectorAll('[data-owner-profile]').forEach(button=>button.addEventListener('click',()=>renderHomeOwnerDetail(button.dataset.ownerProfile,owners)));
+  document.querySelectorAll('[data-team-page]').forEach(button=>button.addEventListener('click',()=>openTeamPage(button.dataset.teamPage,ownerName)));
   if(!skipSchedule) renderScheduleDate();
 }
 function scheduleDateValue(){
@@ -342,6 +360,51 @@ function formatGameTime(value){
   if(!value)return 'Time TBA';
   const d=new Date(value);return Number.isNaN(d.getTime())?'Time TBA':d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit',timeZone:'America/New_York'})+' ET';
 }
+function gameDateForTeam(teamName){
+  if(!window.teamScheduleDate){const d=new Date();d.setHours(12,0,0,0);window.teamScheduleDate=d;}
+  return window.teamScheduleDate;
+}
+let selectedTeamName='',selectedTeamOwner='',teamPageReturn='home';
+function openTeamPage(teamName,ownerName=''){
+  selectedTeamName=teamName;selectedTeamOwner=ownerName;teamPageReturn=currentLeaguePage==='myprofile'?'myprofile':'home';
+  $('leagueDashboardPanel').classList.remove('hidden');
+  $('postDraftHome').classList.add('hidden');$('draftWorkspace').classList.add('hidden');$('ownersPage').classList.add('hidden');$('myLeaguesLeaguePage').classList.add('hidden');
+  $('teamDetailPage').classList.remove('hidden');
+  document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===teamPageReturn;b.classList.toggle('secondary',!active);b.setAttribute('aria-current',active?'page':'false');});
+  renderTeamPage();
+}
+function renderTeamPage(){
+  if(!selectedTeamName||!state)return;
+  const records=state.records||{},record=records[selectedTeamName]||{w:0,l:0};
+  const ownerPick=state.picks.find(p=>p.team===selectedTeamName);
+  const owner=ownerPick?.member||selectedTeamOwner||'Unassigned';
+  $('teamPageName').textContent=selectedTeamName;
+  $('teamPageOwner').textContent='League owner: '+owner;
+  const wins=Number(record.w||0),losses=Number(record.l||0);
+  $('teamPageSummary').innerHTML='<div class="stats"><div class="stat"><b>'+wins+'</b><span>WINS</span></div><div class="stat"><b>'+losses+'</b><span>LOSSES</span></div><div class="stat"><b>'+(wins-losses>0?'+':'')+(wins-losses)+'</b><span>FANTASY POINTS</span></div></div>';
+  renderTeamScheduleDate();
+}
+function renderTeamScheduleDate(){
+  const d=gameDateForTeam(selectedTeamName),date=dateKey(d);
+  const node=$('teamScheduleSelectedDate');if(node)node.textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  const content=$('teamScheduleContent');if(content)content.innerHTML='<div class="empty">Loading team schedule…</div>';
+  getNbaData(date).then(data=>{
+    updateRecordsFromStandings(data.standings);renderPostDraftHome(true);renderOwnerProfiles(true);
+    const team=TEAMS.find(t=>t[0]===selectedTeamName);
+    const games=(data.games||[]).filter(g=>{
+      const names=[g.home_team,g.away_team].map(x=>typeof x==='string'?x:String(x?.name||x?.full_name||x?.display_name||'')).map(x=>x.toLowerCase());
+      const abbrs=[g.home_team,g.away_team].map(x=>String(typeof x==='object'?(x?.abbreviation||x?.abbr||''):'').toUpperCase());
+      return names.includes(selectedTeamName.toLowerCase())||(team&&abbrs.includes(team[1]));
+    });
+    if(content)content.innerHTML=renderGameRows(games);
+    const rec=state.records?.[selectedTeamName]||{w:0,l:0};
+    $('teamPageSummary').innerHTML='<div class="stats"><div class="stat"><b>'+Number(rec.w||0)+'</b><span>WINS</span></div><div class="stat"><b>'+Number(rec.l||0)+'</b><span>LOSSES</span></div><div class="stat"><b>'+(Number(rec.w||0)-Number(rec.l||0)>0?'+':'')+(Number(rec.w||0)-Number(rec.l||0))+'</b><span>FANTASY POINTS</span></div></div>';
+  }).catch(e=>{if(content)content.innerHTML='<div class="empty">NBA data could not load: '+esc(e.message)+'</div>';});
+}
+function changeTeamScheduleDate(delta){const d=new Date(gameDateForTeam(selectedTeamName));d.setDate(d.getDate()+delta);d.setHours(12,0,0,0);window.teamScheduleDate=d;renderTeamScheduleDate();}
+$('teamSchedulePrevDate').addEventListener('click',()=>changeTeamScheduleDate(-1));
+$('teamScheduleNextDate').addEventListener('click',()=>changeTeamScheduleDate(1));
+$('teamPageBack').addEventListener('click',()=>showLeaguePage(teamPageReturn));
 function gameStatusLabel(game){
   const s=String(game.status||'scheduled').toLowerCase();
   if(s==='final')return 'Final';
@@ -371,7 +434,7 @@ function renderGameRows(games, onlyOwned=false){
     const awayAbbr=teamAbbr(away)||(TEAMS.find(t=>t[0].toLowerCase()===awayName.toLowerCase())||[])[1]||'AWAY';
     const homeAbbr=teamAbbr(home)||(TEAMS.find(t=>t[0].toLowerCase()===homeName.toLowerCase())||[])[1]||'HOME';
     const hasScores=g.away_score!==null&&g.away_score!==undefined&&g.home_score!==null&&g.home_score!==undefined;
-    const score=hasScores?'<b class="tag">'+esc(g.away_score)+' – '+esc(g.home_score)+'</b>':'<span class="tag">'+esc(gameStatusLabel(g))+'</span>';
+    const score=hasScores?'<b class="tag">'+esc(g.away_score)+' – '+esc(g.home_score)+'</b>':'';
     return '<div class="team"><span class="abbr">'+esc(awayAbbr)+'</span><span><span class="teamname">'+esc(awayName)+' @ '+esc(homeName)+'</span><span class="tag">'+esc(gameStatusLabel(g))+'</span>'+score+'</span><span class="abbr">'+esc(homeAbbr)+'</span></div>';
   }).join('')+'</div>';
 }
@@ -408,6 +471,7 @@ function applyNbaData(data,date){
   if(dateKey(homeDate)===date)$('homeNbaScheduleContent').innerHTML=renderGameRows(data.games);
   const myDate=scheduleDateValue();
   if(dateKey(myDate)===date)$('myTeamScheduleContent').innerHTML=renderGameRows(data.games,true);
+  if(selectedTeamName&&dateKey(gameDateForTeam(selectedTeamName))===date)renderTeamScheduleDate();
   const status=$('nbaDataStatus');
   if(status)status.textContent='Updated '+new Date(data.updatedAt).toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'})+' · schedule and final scores';
 }
@@ -445,10 +509,11 @@ $('homeSchedulePrevDate').addEventListener('click',()=>changeHomeNbaScheduleDate
 $('homeScheduleNextDate').addEventListener('click',()=>changeHomeNbaScheduleDate(1));
 function renderHomeOwnerDetail(name,owners){
   const o=owners.find(x=>x.name===name);if(!o)return;const records=state.records||{};
-  const cards=o.picks.map(p=>{const w=Number(records[p.team]?.w||0),l=Number(records[p.team]?.l||0);return '<div class="team"><span><span class="teamname">'+esc(p.team)+'</span><span class="tag">'+w+' W - '+l+' L · '+(w-l>0?'+':'')+(w-l)+' fantasy pts</span></span></div>';}).join('')||'<div class="empty">No teams drafted yet.</div>';
+  const cards=o.picks.map(p=>{const w=Number(records[p.team]?.w||0),l=Number(records[p.team]?.l||0);return '<button type="button" class="team" data-team-page="'+esc(p.team)+'" data-team-owner="'+esc(o.name)+'"><span><span class="teamname">'+esc(p.team)+'</span><span class="tag">'+w+' W - '+l+' L · '+(w-l>0?'+':'')+(w-l)+' fantasy pts</span></span></button>';}).join('')||'<div class="empty">No teams drafted yet.</div>';
   $('homeOwnerProfileDetail').classList.remove('hidden');
   $('homeOwnerProfileDetail').innerHTML='<div class="row between"><div><div class="eyebrow">OWNER PROFILE</div><h2>'+esc(o.name)+'</h2></div><button type="button" class="secondary" id="closeHomeOwnerProfile">Close</button></div><div class="stats"><div class="stat"><b>'+o.picks.length+'</b><span>NBA TEAMS</span></div><div class="stat"><b>'+o.wins+'</b><span>TEAM WINS</span></div><div class="stat"><b>'+o.losses+'</b><span>TEAM LOSSES</span></div><div class="stat"><b>'+(o.points>0?'+':'')+o.points+'</b><span>FANTASY POINTS</span></div></div><div class="teamgrid">'+cards+'</div>';
   $('closeHomeOwnerProfile').addEventListener('click',()=>$('homeOwnerProfileDetail').classList.add('hidden'));
+  $('homeOwnerProfileDetail').querySelectorAll('[data-team-page]').forEach(button=>button.addEventListener('click',()=>openTeamPage(button.dataset.teamPage,button.dataset.teamOwner)));
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showLeaguePage(b.dataset.page)));
 $('createForm').addEventListener('submit',createLeague);$('joinForm').addEventListener('submit',joinLeague);$('copyInviteBtn').addEventListener('click',copyCode);$('copyInviteBtn2').addEventListener('click',copyCode);$('startBtn').addEventListener('click',()=>act('nba_start_draft',{},'Draft started.'));$('randomizeBtn').addEventListener('click',()=>act('nba_randomize_draft_order',{},'Draft order randomized.'));$('undoBtn').addEventListener('click',()=>{if(confirm('Undo the most recent pick?'))act('nba_undo_last_pick',{},'Last pick undone.');});$('resetBtn').addEventListener('click',()=>{if(confirm('Reset the entire draft? All 30 team picks will be cleared.'))act('nba_reset_league',{},'Draft reset.');});$('leaveBtn').addEventListener('click',()=>{if(confirm('Remove this league from this device? This does not delete the shared league.')){localStorage.removeItem('nbaLeagueSession');session=null;state=null;inviteCode='';showApp();$('connection').textContent='Ready';}});
