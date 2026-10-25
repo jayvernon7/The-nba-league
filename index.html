@@ -68,7 +68,7 @@
 <div class="panel"><h2>Join a league</h2><p class="muted">Have an invite code? Join your league from any device.</p><form id="joinForm"><div class="field"><label for="inviteCodeInput">INVITATION CODE</label><input id="inviteCodeInput" maxlength="16" placeholder="e.g. 1A2B3C4D" required></div><div class="field"><label for="joinName">YOUR GM NAME</label><input id="joinName" maxlength="32" placeholder="Choose a unique name" required></div><button type="submit">Join League</button></form><div id="joinStatus" class="status"></div></div>
 </section>
 <section id="app" class="hidden">
-<div id="leagueNav" class="panel row" aria-label="League pages"><button type="button" class="navtab" data-page="home">League Home</button><button type="button" class="secondary navtab" data-page="draft">Draft Room</button><button type="button" class="secondary navtab" data-page="owners">Owner Profiles</button></div>
+<div id="leagueNav" class="panel row" aria-label="League pages"><button type="button" class="navtab" data-page="home">League Home</button><button type="button" class="secondary navtab" data-page="draft">Draft Room</button><button type="button" class="secondary navtab" data-page="myprofile">My Profile</button></div>
 <div id="leagueDashboardPanel" class="panel"><div class="sectionhead"><div><div class="eyebrow">LEAGUE DASHBOARD</div><h2 id="leagueTitle">The NBA League</h2><div class="muted small" id="youLabel"></div></div><div class="row"><button class="secondary" id="copyInviteBtn">Copy Invite Code</button><button class="secondary" id="leaveBtn">Leave on this device</button></div>
 </div>
 <div id="inviteArea" class="notice hidden"><div class="small">COMMISSIONER INVITE CODE — share this with your GMs</div><div class="row between"><span class="invite" id="inviteCodeDisplay"></span><button id="copyInviteBtn2">Copy Code</button></div></div>
@@ -96,8 +96,7 @@
   </div>
 </section>
 <section id="ownersPage" class="hidden">
-  <div class="panel"><div class="eyebrow">OWNER PROFILES</div><h2>General Managers</h2><p class="muted">Choose a GM to see their drafted NBA teams, team records, and fantasy points.</p><div id="ownerProfileList" class="teamgrid"></div></div>
-  <div id="ownerProfileDetail" class="panel hidden"></div>
+  <div class="panel"><div class="eyebrow">MY PROFILE</div><h2 id="myProfileHeading">My NBA Teams</h2><p class="muted">Your drafted NBA teams, records, fantasy points, and team schedules.</p><div id="myProfileDetail"></div></div>
 </section>
 </section><div class="footer">The NBA League · Shared league state powered by Supabase · Keep your device membership private.</div></main>
 <script>
@@ -278,24 +277,21 @@ function showLeaguePage(page){
   $('leagueDashboardPanel').classList.toggle('hidden', page !== 'draft');
   $('postDraftHome').classList.toggle('hidden', page !== 'home');
   $('draftWorkspace').classList.toggle('hidden', page !== 'draft');
-  $('ownersPage').classList.toggle('hidden', page !== 'owners');
+  $('ownersPage').classList.toggle('hidden', page !== 'myprofile');
   document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('secondary',!active);b.setAttribute('aria-current',active?'page':'false');});
 }
 function renderOwnerProfiles(){
   if (!state) return;
   const records=state.records||{};
-  const owners=state.members.map(m=>{const picks=state.picks.filter(p=>p.member===m.display_name);let wins=0,losses=0;picks.forEach(p=>{wins+=Number(records[p.team]?.w||0);losses+=Number(records[p.team]?.l||0);});return {name:m.display_name,picks,wins,losses,points:wins-losses,admin:m.is_admin};});
-  owners.sort((a,b)=>b.points-a.points||b.wins-a.wins||a.name.localeCompare(b.name));
-  $('ownerProfileList').innerHTML=owners.map((o,i)=>'<button type="button" class="team" data-owner="'+esc(o.name)+'"><span class="abbr">'+(i+1)+'</span><span><span class="teamname">'+esc(o.name)+(o.admin?' ★':'')+'</span><span class="tag">'+o.picks.length+' teams · '+(o.points>0?'+':'')+o.points+' fantasy points</span></span></button>').join('')||'<div class="empty">No owners yet.</div>';
-  document.querySelectorAll('[data-owner]').forEach(b=>b.addEventListener('click',()=>renderOwnerDetail(b.dataset.owner,owners)));
-}
-function renderOwnerDetail(name,owners){
-  const o=owners.find(x=>x.name===name);if(!o)return;const records=state.records||{};
-  $('ownerProfileDetail').classList.remove('hidden');
+  const ownerName=state.you?.display_name || session?.name || '';
+  const picks=state.picks.filter(p=>p.member===ownerName);
+  let wins=0,losses=0;
+  picks.forEach(p=>{wins+=Number(records[p.team]?.w||0);losses+=Number(records[p.team]?.l||0);});
+  const points=wins-losses;
   const slugs={ATL:'hawks',BOS:'celtics',BKN:'nets',CHA:'hornets',CHI:'bulls',CLE:'cavaliers',DAL:'mavericks',DEN:'nuggets',DET:'pistons',GSW:'warriors',HOU:'rockets',IND:'pacers',LAC:'clippers',LAL:'lakers',MEM:'grizzlies',MIA:'heat',MIL:'bucks',MIN:'timberwolves',NOP:'pelicans',NYK:'knicks',OKC:'thunder',ORL:'magic',PHI:'76ers',PHX:'suns',POR:'trail-blazers',SAC:'kings',SAS:'spurs',TOR:'raptors',UTA:'jazz',WAS:'wizards'};
-  const cards=o.picks.map(p=>{const w=Number(records[p.team]?.w||0),l=Number(records[p.team]?.l||0);return '<div class="team"><span class="abbr">'+esc(p.abbr)+'</span><span><span class="teamname">'+esc(p.team)+'</span><span class="tag">'+w+' W · '+l+' L · '+(w-l>0?'+':'')+(w-l)+' fantasy pts</span><span class="tag"><a target="_blank" rel="noopener noreferrer" href="https://www.nba.com/'+(slugs[p.abbr]||'')+'/schedule">View team schedule ↗</a></span></span></div>';}).join('')||'<div class="empty">No teams drafted yet.</div>';
-  $('ownerProfileDetail').innerHTML='<div class="eyebrow">OWNER PROFILE</div><h2>'+esc(o.name)+'</h2><div class="stats"><div class="stat"><b>'+o.picks.length+'</b><span>NBA TEAMS</span></div><div class="stat"><b>'+o.wins+'</b><span>TEAM WINS</span></div><div class="stat"><b>'+o.losses+'</b><span>TEAM LOSSES</span></div><div class="stat"><b>'+(o.points>0?'+':'')+o.points+'</b><span>FANTASY POINTS</span></div></div><div class="teamgrid">'+cards+'</div>';
-  $('ownerProfileDetail').scrollIntoView({behavior:'smooth',block:'start'});
+  const cards=picks.map(p=>{const w=Number(records[p.team]?.w||0),l=Number(records[p.team]?.l||0);return '<div class="team"><span class="abbr">'+esc(p.abbr)+'</span><span><span class="teamname">'+esc(p.team)+'</span><span class="tag">'+w+' W · '+l+' L · '+(w-l>0?'+':'')+(w-l)+' fantasy pts</span><span class="tag"><a target="_blank" rel="noopener noreferrer" href="https://www.nba.com/'+(slugs[p.abbr]||'')+'/schedule">View team schedule ↗</a></span></span></div>';}).join('')||'<div class="empty">You have no drafted teams in this league yet.</div>';
+  $('myProfileHeading').textContent=ownerName ? ownerName+"'s Profile" : 'My NBA Teams';
+  $('myProfileDetail').innerHTML='<div class="stats"><div class="stat"><b>'+picks.length+'</b><span>NBA TEAMS</span></div><div class="stat"><b>'+wins+'</b><span>TEAM WINS</span></div><div class="stat"><b>'+losses+'</b><span>TEAM LOSSES</span></div><div class="stat"><b>'+(points>0?'+':'')+points+'</b><span>FANTASY POINTS</span></div></div><div class="teamgrid">'+cards+'</div>';
 }
 document.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>showLeaguePage(b.dataset.page)));
 $('createForm').addEventListener('submit',createLeague);$('joinForm').addEventListener('submit',joinLeague);$('copyInviteBtn').addEventListener('click',copyCode);$('copyInviteBtn2').addEventListener('click',copyCode);$('startBtn').addEventListener('click',()=>act('nba_start_draft',{},'Draft started.'));$('randomizeBtn').addEventListener('click',()=>act('nba_randomize_draft_order',{},'Draft order randomized.'));$('undoBtn').addEventListener('click',()=>{if(confirm('Undo the most recent pick?'))act('nba_undo_last_pick',{},'Last pick undone.');});$('resetBtn').addEventListener('click',()=>{if(confirm('Reset the entire draft? All 30 team picks will be cleared.'))act('nba_reset_league',{},'Draft reset.');});$('leaveBtn').addEventListener('click',()=>{if(confirm('Remove this league from this device? This does not delete the shared league.')){localStorage.removeItem('nbaLeagueSession');session=null;state=null;inviteCode='';showApp();$('connection').textContent='Ready';}});
