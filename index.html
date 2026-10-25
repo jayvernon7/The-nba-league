@@ -291,7 +291,7 @@ function showLeaguePage(page){
   $('draftWorkspace').classList.toggle('hidden', page !== 'draft');
   $('ownersPage').classList.toggle('hidden', page !== 'myprofile');
   $('myLeaguesLeaguePage').classList.toggle('hidden', page !== 'leagues');
-  if (page === 'leagues') loadMyLeagues('myLeaguesInLeagueList');
+  if (page === 'leagues' && currentLeaguePage !== 'leagues') loadMyLeagues('myLeaguesInLeagueList');
   document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('secondary',!active);b.setAttribute('aria-current',active?'page':'false');});
 }
 function renderOwnerProfiles(){
@@ -599,5 +599,5 @@ $('logoutBtn').addEventListener('click', () => {
 // Restore the saved account and league on page load. Only the Log Out button clears the account session.
 showAccountScreen();
 if (!session) $('connection').textContent = accountSession ? 'Ready to open a league' : 'Ready to sign in';
-setInterval(()=>{if(session) refresh();},3000);
+setInterval(()=>{if(session && currentLeaguePage !== 'leagues') refresh();},3000);
 </script></body></html>
