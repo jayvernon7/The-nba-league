@@ -55,8 +55,6 @@
   </div>
 </section>
 
-<section id="settingsPage" class="panel hidden"><div class="sectionhead"><div><div class="eyebrow">ACCOUNT</div><h2>Settings</h2></div><button type="button" class="secondary" id="settingsBackBtn">Back</button></div><p class="muted">Settings will be built here next.</p></section>
-
 <section id="myLeaguesSection" class="panel hidden">
   <h2>My Leagues</h2>
   <p class="muted">All leagues connected to your account will appear here.</p>
@@ -72,6 +70,7 @@
 </section>
 <section id="app" class="hidden">
 <div id="leagueNav" class="panel row" aria-label="League pages"><button type="button" class="navtab" data-page="home">League Home</button><button type="button" class="secondary navtab" data-page="draft">Draft Room</button><button type="button" class="secondary navtab" data-page="myprofile">My Profile</button></div>
+<div id="settingsPage" class="panel hidden"><div class="sectionhead"><div><div class="eyebrow">ACCOUNT</div><h2>Settings</h2></div></div><p class="muted">Settings will be built here next.</p></div>
 <div id="leagueDashboardPanel" class="panel"><div class="sectionhead"><div><div class="eyebrow">LEAGUE DASHBOARD</div><h2 id="leagueTitle">MyNba Teams</h2><div class="muted small" id="youLabel"></div></div><div class="row"><button class="secondary" id="copyInviteBtn">Copy Invite Code</button><button class="secondary" id="leaveBtn">Leave on this device</button></div>
 </div>
 <div id="inviteArea" class="notice hidden"><div class="small">COMMISSIONER INVITE CODE — share this with your GMs</div><div class="row between"><span class="invite" id="inviteCodeDisplay"></span><button id="copyInviteBtn2">Copy Code</button></div></div>
@@ -417,6 +416,7 @@ function showLeaguePage(page){
   $('draftWorkspace').classList.toggle('hidden', page !== 'draft');
   $('ownersPage').classList.toggle('hidden', page !== 'myprofile');
   $('teamDetailPage').classList.add('hidden');
+  $('settingsPage').classList.add('hidden');
   $('myLeaguesLeaguePage').classList.toggle('hidden', page !== 'leagues');
   if (page === 'leagues' && previousPage !== 'leagues') loadMyLeagues('myLeaguesInLeagueList');
   document.querySelectorAll('[data-page]').forEach(b=>{const active=b.dataset.page===page;b.classList.toggle('secondary',!active);b.setAttribute('aria-current',active?'page':'false');});
@@ -875,14 +875,28 @@ $('menuMyLeaguesBtn').addEventListener('click', () => {
 $('menuSettingsBtn').addEventListener('click', () => {
   $('accountMenuDropdown').classList.add('hidden');
   $('accountMenuToggle').setAttribute('aria-expanded', 'false');
-  $('accountScreen').classList.add('hidden');
-  $('accountPageTabs').classList.add('hidden');
-  $('myLeaguesSection').classList.add('hidden');
-  $('lobby').classList.add('hidden');
-  $('app').classList.add('hidden');
-  $('settingsPage').classList.remove('hidden');
+  if (session) {
+    $('accountScreen').classList.add('hidden');
+    $('accountPageTabs').classList.add('hidden');
+    $('myLeaguesSection').classList.add('hidden');
+    $('lobby').classList.add('hidden');
+    $('app').classList.remove('hidden');
+    $('leagueDashboardPanel').classList.add('hidden');
+    $('postDraftHome').classList.add('hidden');
+    $('draftWorkspace').classList.add('hidden');
+    $('ownersPage').classList.add('hidden');
+    $('teamDetailPage').classList.add('hidden');
+    $('myLeaguesLeaguePage').classList.add('hidden');
+    $('settingsPage').classList.remove('hidden');
+  } else if (accountSession) {
+    $('accountScreen').classList.add('hidden');
+    $('accountPageTabs').classList.add('hidden');
+    $('myLeaguesSection').classList.add('hidden');
+    $('lobby').classList.add('hidden');
+    $('app').classList.add('hidden');
+    $('settingsPage').classList.remove('hidden');
+  }
 });
-$('settingsBackBtn').addEventListener('click', () => showAccountScreen());
 document.addEventListener('click', (event) => {
   if (!$('accountMenuWrap').contains(event.target)) {
     $('accountMenuDropdown').classList.add('hidden');
