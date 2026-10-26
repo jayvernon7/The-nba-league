@@ -298,7 +298,7 @@ $('draftResults').innerHTML=state.picks.length?state.picks.map(p=>`<div class="p
 if(selectedTeamName && !$('teamDetailPage').classList.contains('hidden')){
   $('leagueDashboardPanel').classList.add('hidden');
   $('postDraftHome').classList.add('hidden');$('draftWorkspace').classList.add('hidden');$('ownersPage').classList.add('hidden');$('myLeaguesLeaguePage').classList.add('hidden');
-} else { showLeaguePage(currentLeaguePage); }}
+} else if ($('settingsPage').classList.contains('hidden')) { showLeaguePage(currentLeaguePage); }}
 
 
 let activeBoxScoreTeams=[];
